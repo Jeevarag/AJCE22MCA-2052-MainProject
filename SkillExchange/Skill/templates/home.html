@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <style>
+        body, h1, h2, h3, p, ul, li {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background-color: #dbe9f6;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin: 0 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #80a4c2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #658da9;
+        }
+
+
+        .hero {
+            background-size: cover;
+            text-align: center;
+            padding: 50px 0;
+            color: #5c5c5c;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .user-profile{
+            background-size: cover;
+            text-align: left;
+            padding: 100px 100px;
+            color: #5c5c5c;
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+        {% if user.is_authenticated %}
+            <div class="user-info">
+                <p>Hello, {{ user.username }}!</p>
+                <a href="{% url 'logout' %}" class="btn btn-primary">Logout</a>
+            </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-primary">Logout</a>
+        {% endif %}
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to SkillShare</h1>
+            <a href="#" class="btn btn-primary">Learn More</a>
+        </div>
+    </section>
+     <section class="user-profile">
+        <h2>User Profile</h2>
+        <h3>Hello, {{ user.username }}</h3>
+        <h4>Your Skills:</h4>
+        <ul>
+            {% for skill in user_skills %}
+                <li>{{ skill.name }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- Other sections and content -->
+
+    <footer>
+        <p>&copy; 2023 SkillShare. All rights reserved.</p>
+    </footer>
+</body>
+</html>
