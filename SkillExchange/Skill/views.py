@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -22,7 +23,7 @@ def register(request):
 
         # Create a user instance but do not save it yet
         user = CustomUser(username=username, email=email)
-
+ 
         # Set the password for the user
         user.set_password(password)
 
@@ -46,14 +47,14 @@ def user_login(request):
             request.session['username'] = user.username
             return redirect('home')
         else:
-            return render(request, 'login.html', {'error_message': 'Invalid credentials!!'})
+            messages.error(request, 'Invalid credentials!!')
 
     return render(request, 'login.html')
 
 
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
 
 
 #comment

@@ -18,10 +18,13 @@ function validateUsername() {
 
     if (usernameValue === '') {
         usernameError.textContent = 'Username cannot be empty.';
-        usernameError.style.color = 'red'; // Set error text color to red
+        usernameError.style.color = 'red';
+    } else if (/\s/.test(usernameValue)) {
+        usernameError.textContent = 'Username cannot contain spaces.';
+        usernameError.style.color = 'red';
     } else if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(usernameValue)) {
         usernameError.textContent = 'Username must start with a letter and contain only letters and numbers.';
-        usernameError.style.color = 'red'; // Set error text color to red
+        usernameError.style.color = 'red';
     } else {
         usernameError.textContent = '';
     }
@@ -30,21 +33,22 @@ function validateUsername() {
 function validateEmail() {
     const emailInput = document.getElementById('email');
     const emailError = document.getElementById('emailError');
-    const emailValue = emailInput.value.trim();
+    const emailValue = emailInput.value.trim().toLowerCase(); // Convert to lowercase
 
     if (emailValue === '') {
         emailError.textContent = 'Email cannot be empty.';
-        emailError.style.color = 'red'; // Set error text color to red
+        emailError.style.color = 'red';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
         emailError.textContent = 'Invalid email format.';
-        emailError.style.color = 'red'; // Set error text color to red
+        emailError.style.color = 'red';
     } else {
         emailError.textContent = '';
     }
 }
 
+
 function validatePassword() {
-    const passwordInput = document.getElementById('password');
+    const passwordInput = document.getElementById('password');``
     const passwordError = document.getElementById('passwordError');
     const passwordValue = passwordInput.value.trim();
 

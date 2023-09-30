@@ -86,8 +86,18 @@
                 <label for="login_password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="login_password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-            <a href="{% url 'register' %}" class="link">Create an account</a>
+            {% if messages %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+            <br><center><button type="submit" class="btn btn-primary">Login</button></center><br><br>
+            <center><a href="{% url 'register' %}" class="link">Forgot password?</a></center><br>
+            <center>Don't have an account? <a href="{% url 'register' %}" class="link">Signup</a></center>
         </form>
     </div>
 </body>

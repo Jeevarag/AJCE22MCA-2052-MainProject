@@ -94,7 +94,7 @@
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="#">About</a></li>
-                <li><a href="#">Services</a></li>
+                <!--<li><a href="#">Services</a></li>-->
                 <li><a href="#">Contact</a></li>
             </ul>
         </nav>
@@ -104,31 +104,21 @@
                 <a href="{% url 'logout' %}" class="btn btn-primary">Logout</a>
             </div>
         {% else %}
-            <a href="{% url 'login' %}" class="btn btn-primary">Logout</a>
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
         {% endif %}
     </header>
 
     <section class="hero">
         <div class="hero-content">
-            <h1>Welcome to SkillShare</h1>
-            <a href="#" class="btn btn-primary">Learn More</a>
+            <h1>Welcome to SkillSwap</h1>
+            <!--<a href="#" class="btn btn-primary">Learn More</a>-->
         </div>
     </section>
-     <section class="user-profile">
-        <h2>User Profile</h2>
-        <h3>Hello, {{ user.username }}</h3>
-        <h4>Your Skills:</h4>
-        <ul>
-            {% for skill in user_skills %}
-                <li>{{ skill.name }}</li>
-            {% endfor %}
-        </ul>
-    </section>
-
+    
     <!-- Other sections and content -->
 
     <footer>
-        <p>&copy; 2023 SkillShare. All rights reserved.</p>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
 </body>
 </html>
