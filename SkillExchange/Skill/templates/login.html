@@ -25,6 +25,7 @@
             background-color: #c2d4e6; /* Darker pastel color */
             border-radius: 50%;
             opacity: 0.3;
+            animation: float 3s ease-in-out infinite; /* Add a floating animation */
         }
 
         body::before {
@@ -41,6 +42,15 @@
             left: -125px;
         }
 
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
         .auth-form {
             background-color: #f0f5f9;
             border-radius: 20px;
@@ -49,6 +59,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            animation: fadeIn 1s ease-in-out; /* Add a fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
 
         .form-label {
@@ -57,11 +77,17 @@
 
         .form-control {
             background-color: #e2edf3;
+            transition: background-color 0.3s; /* Add a transition effect */
+        }
+
+        .form-control:focus {
+            background-color: #c2d4e6; /* Change the background color on focus */
         }
 
         .btn-primary {
             background-color: #80a4c2;
             border: none;
+            transition: background-color 0.3s; /* Add a transition effect */
         }
 
         .btn-primary:hover {
@@ -70,6 +96,12 @@
 
         .link {
             color: #658da9;
+            text-decoration: none;
+            transition: color 0.3s; /* Add a color transition effect */
+        }
+
+        .link:hover {
+            color: #80a4c2;
         }
     </style>
 </head>
@@ -94,11 +126,16 @@
                     {% endfor %}
                 </ul>
             </div>
-        {% endif %}
-            <br><center><button type="submit" class="btn btn-primary">Login</button></center><br><br>
-            <center><a href="{% url 'register' %}" class="link">Forgot password?</a></center><br>
-            <center>Don't have an account? <a href="{% url 'register' %}" class="link">Signup</a></center>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Login</button><br><br>
         </form>
+        <hr> <!-- Add a horizontal line for separation -->
+        <!-- "Login with Google" button -->
+        {% load socialaccount %}
+        <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-primary">Login with Google</a>
+        <br><br>
+        <center><a href="{% url 'password_reset' %}" class="link">Forgot Password?</a></center><br>
+        Don't have an account <a href="{% url 'register' %}" class="link">Create an account</a>
     </div>
 </body>
 </html>

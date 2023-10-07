@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Include your custom CSS file with the shared styles -->
+    <link rel="stylesheet" href="your_custom_styles.css">
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Add custom CSS styles for the admin dashboard here */
+
+        /* Sidebar styles */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #dbe9f6; /* Use your preferred background color */
+            padding-top: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            padding: 10px;
+        }
+
+        .sidebar a {
+            color: #333; /* Use your preferred text color */
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #f0f5f9; /* Use your preferred hover background color */
+        }
+
+        /* Main content styles */
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #f0f5f9; /* Use your preferred header background color */
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Page title styles */
+        .page-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Users</a></li>
+        </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Dashboard</h1>
+            <a href="#">Logout</a>
+        </div>
+
+        <!-- Content area -->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <p class="card-text">{{ user_count }}</p>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Add the table here -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>E-Mail</th>
+                        <th>City</th>
+                        <th>Remove User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nuser in useer.users %}
+                    <tr>
+                        <td>{{ nuser.username }}</td>
+                        <td>{{ nuser.email }}</td>
+                        <td>{{ nuser.city }}</td>
+                        <td><button type="submit" class="btn btn-danger mr-2">Block</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

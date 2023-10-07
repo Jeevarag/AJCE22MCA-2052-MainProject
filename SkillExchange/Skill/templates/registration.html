@@ -26,6 +26,7 @@
             background-color: #c2d4e6; /* Darker pastel color */
             border-radius: 50%;
             opacity: 0.3;
+            animation: float 3s ease-in-out infinite; /* Add a floating animation */
         }
 
         body::before {
@@ -42,14 +43,33 @@
             left: -125px;
         }
 
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
         .registration-form {
             background-color: #f0f5f9;
             border-radius: 20px;
             padding: 60px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            /* display: flex;
-            flex-direction: column; */
+            display: flex;
+            flex-direction: column;
             align-items: center;
+            animation: fadeIn 1s ease-in-out; /* Add a fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
 
         .form-label {
@@ -58,11 +78,17 @@
 
         .form-control {
             background-color: #e2edf3;
+            transition: background-color 0.3s; /* Add a transition effect */
+        }
+
+        .form-control:focus {
+            background-color: #c2d4e6; /* Change the background color on focus */
         }
 
         .btn-primary {
             background-color: #80a4c2;
             border: none;
+            transition: background-color 0.3s; /* Add a transition effect */
         }
 
         .btn-primary:hover {
@@ -71,12 +97,18 @@
 
         .link {
             color: #658da9;
+            text-decoration: none;
+            transition: color 0.3s; /* Add a color transition effect */
+        }
+
+        .link:hover {
+            color: #80a4c2;
         }
 
         .error {
             color: red;
             font-size: 14px;
-            margin-top: 5px
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -92,7 +124,7 @@
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
+                <input type="email" class="form-control" id="email" name="email" onkeyup="checkemail()">
                 <div id="emailError" class="error"></div>
             </div>
             <div class="mb-3">
@@ -106,8 +138,8 @@
                 <div id="confirmPasswordError" class="error-message"></div>
             </div>
             
-             <center><button type="submit" class="btn btn-primary">Register</button></center>
-            <br><br><center><a href="{% url 'login' %}" class="link">Already have an account?</a></center>
+            <button type="submit" class="btn btn-primary">Register</button>
+            <br><br><a href="{% url 'login' %}" class="link">Already have an account?</a>
         </form>
     </div>
     <script src="{% static 'Skill/Reg_validation.js' %}"></script>

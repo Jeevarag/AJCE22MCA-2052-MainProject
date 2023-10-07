@@ -1,0 +1,221 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background-color: #dbe9f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin: 0 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #f0f5f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .edit-left {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center the content horizontally */
+        }
+
+        .edit-right {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push buttons to the bottom */
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #80a4c2; /* You can replace this with an actual image URL */
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 20px;
+        }
+
+        .edit-profile-button, .save-profile-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #80a4c2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            margin-top: 10px; /* Adjust the margin to create spacing */
+        }
+
+        .edit-profile-button:hover, .save-profile-button:hover {
+            background-color: #658da9;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .skills {
+            text-align: left;
+            padding-left: 20px;
+            list-style: none;
+        }
+
+        .skills li {
+            margin-bottom: 10px;
+        }
+        .city-edit {
+            text-align: left;
+            margin-top: 20px; /* Adjust the margin for spacing */
+        }
+
+        .city-edit label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .city-edit input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #80a4c2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #658da9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="{% url 'profile' %}">My profile</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+            <div class="user-info">
+                <p>Hello, {{ user.username }}!</p>
+                <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
+            </div>
+    </header>
+
+    <div class="edit-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="edit-left">
+                <div class="profile-picture" {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture">
+                {% else %}
+                <!-- Display a placeholder or default image if no profile picture exists -->
+                <img src="{% static 'Images/profile_default.png' %}" alt="Default Profile Picture">
+                {% endif %}
+                    
+                </div>
+                <input type="file" name="profile_picture" accept="image/*">
+                <button class="edit-profile-button" type="submit">Change Profile Picture</button>
+            </div>
+            <div class="edit-right">
+                <h2>Edit About Me</h2>
+                <textarea name="about_me" rows="5">{{ user.about_me }}</textarea>
+                <!-- Move the "City" label and input field here -->
+                <div class="city-edit">
+                    <label for="city">City:</label>
+                    <input type="text" name="city" id="city" value="{{ user.city }}">
+                </div>
+                <button class="save-profile-button" type="submit">Save Profile</button>
+            </div>
+        </form>
+    </div>
+    
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener("DOMContentLoaded", function () {
+            // Find the logout button by its ID
+            var logoutButton = document.getElementById("logout-link");
+    
+            // Add a click event listener to the logout button
+            logoutButton.addEventListener("click", function () {
+                // Reload the page after a short delay (you can adjust the delay as needed)
+                setTimeout(function () {
+                    location.reload();
+                }, 1000); // Reload after 1 second (1000 milliseconds)
+            });
+        });
+    </script>
+</body>
+</html>
