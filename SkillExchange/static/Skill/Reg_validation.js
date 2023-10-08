@@ -26,7 +26,17 @@ function validateUsername() {
         usernameError.textContent = 'Username must start with a letter and contain only letters and numbers.';
         usernameError.style.color = 'red';
     } else {
-        usernameError.textContent = '';
+        // Send an AJAX request to check if the username is available
+        fetch(`/check_username/?username=${usernameValue}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    usernameError.textContent = 'Username is already taken.';
+                    usernameError.style.color = 'red';
+                } else {
+                    usernameError.textContent = '';
+                }
+            });
     }
 }
 
@@ -42,7 +52,17 @@ function validateEmail() {
         emailError.textContent = 'Invalid email format.';
         emailError.style.color = 'red';
     } else {
-        emailError.textContent = '';
+        // Send an AJAX request to check if the email is available
+        fetch(`/check_email/?email=${emailValue}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    emailError.textContent = 'Email is already registered.';
+                    emailError.style.color = 'red';
+                } else {
+                    emailError.textContent = '';
+                }
+            });
     }
 }
 
@@ -60,7 +80,7 @@ function validatePassword() {
         passwordError.style.color = 'red'; // Set error text color to red
     } else {
         passwordError.textContent = '';
-    }
+    } 
 }
 
 function validateConfirmPassword() {
@@ -78,12 +98,10 @@ function validateConfirmPassword() {
         confirmPasswordError.style.color = 'red'; // Set error text color to red
     } else {
         confirmPasswordError.textContent = '';
-    }
+    } 
 }
 
 function validateForm() {
-    // Perform additional form-level validation if needed
-    // Return true to allow form submission, false to prevent it
     const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -99,5 +117,15 @@ function validateForm() {
         return false;
     }
 
+    // Perform additional validations here
+    // For example, you can call your other validation functions like validateUsername, validateEmail, etc.
+    // If any of these functions return false, return false here as well to prevent form submission
+
+    if (!validateUsername() || !validateEmail() || !validatePassword() || !validateConfirmPassword()) {
+        return false;
+    }
+
     return true;
 }
+
+

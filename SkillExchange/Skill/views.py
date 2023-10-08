@@ -38,7 +38,16 @@ def register(request):
     return render(request, 'registration.html')
 
 
-from django.contrib import messages
+def check_username(request):
+    username = request.GET.get('username', '')
+    user_exists = CustomUser.objects.filter(username=username).exists()
+    return JsonResponse({'exists': user_exists})
+
+def check_email(request):
+    email = request.GET.get('email', '').lower()
+    email_exists = CustomUser.objects.filter(email=email).exists()
+    return JsonResponse({'exists': email_exists})
+
 
 def user_login(request):
     if request.method == 'POST':
