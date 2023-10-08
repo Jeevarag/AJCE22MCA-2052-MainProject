@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserChangeForm
 from django.http import JsonResponse
 from .forms import SkillForm 
+from django.contrib import messages
 
 
 # Create your views here.
@@ -37,31 +38,38 @@ def register(request):
     return render(request, 'registration.html')
 
 
+from django.contrib import messages
+
 def user_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
+
         if username == "jeejay" and password == "jee123":
-            # Redirect to admin_index.html
-           
-            users = CustomUser.objects.exclude(is_superuser='1')
-            user_count = CustomUser.objects.count()
-            useer={
-                "users":users,
-                "user_count":user_count
+            # For the superuser, redirect to admin_index.html with user list and count
+            users = CustomUser.objects.exclude(is_superuser='1')  # Exclude superusers
+            user_count = users.count()
+            context = {
+                "users": users,
+                "user_count": user_count
             }
-            return render(request, 'admin_index.html', useer)
-        elif user is not None:
-            login(request, user)
-            request.session['username'] = user.username
-            return redirect('home')
-        else:  
-            return render(request, 'login.html', {'error_message': 'Invalid credentials!!'})
+            return render(request, 'admin_index.html', context)
+        else:
+            # For regular users, attempt to authenticate
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                request.session['username'] = user.username
+                return redirect('home')
+            else:
+                # Add an error message
+                messages.error(request, 'Invalid credentials!!')
 
     return render(request, 'login.html')
 
 
+
+@login_required(login_url='login')
 def edit_profile(request):
     if request.method == 'POST':
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
@@ -73,7 +81,7 @@ def edit_profile(request):
 
     return render(request, 'edit_profile.html', {'form': form})
 
-
+@login_required(login_url='login')
 def view_profile(request):
     user_profile = CustomUser.objects.get(id=request.user.id)
     user_skills = user_profile.skills.all() 
@@ -85,11 +93,12 @@ def user_logout(request):
         logout(request)
     return redirect('login')
 
-
+@login_required(login_url='login')
 def admin_index(request):
-    return render(request, 'admin_index.html', {'user_count': user_count})
+    return render(request, 'admin_index.html')
 
 
+@login_required(login_url='login')
 def add_skill(request):
     if request.method == 'POST':
         skill_form = SkillForm(request.POST)

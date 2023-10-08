@@ -4,12 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <!-- Include your custom CSS file with the shared styles -->
-    <link rel="stylesheet" href="your_custom_styles.css">
+    <!-- Include the Montserrat font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <!-- Include Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Add custom CSS styles for the admin dashboard here */
+
+        /* Body styles */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f5f9; /* Use your preferred background color */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #f0f5f9; /* Use your preferred header background color */
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between; /* Align items horizontally */
+            align-items: center; /* Align items vertically */
+            width: 100%; /* Header width spans the whole page */
+            position: fixed; /* Fixed position for the header */
+            z-index: 1; /* Ensure the header appears above the sidebar */
+        }
+
+        /* Page title styles */
+        .page-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Logout button styles */
+        #logout-link {
+            background-color: #80a4c2; /* Use your preferred button background color */
+            color: #fff; /* Use your preferred button text color */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        #logout-link:hover {
+            background-color: #658da9; /* Use your preferred button hover background color */
+        }
 
         /* Sidebar styles */
         .sidebar {
@@ -18,8 +60,10 @@
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #dbe9f6; /* Use your preferred background color */
+            background-color: #333; /* Use your preferred background color */
+            color: #fff; /* Use your preferred text color */
             padding-top: 20px;
+            margin-top: 60px; /* Adjust margin to start after the header */
         }
 
         .sidebar ul {
@@ -32,13 +76,13 @@
         }
 
         .sidebar a {
-            color: #333; /* Use your preferred text color */
+            color: #fff; /* Use your preferred text color */
             text-decoration: none;
             display: block;
         }
 
         .sidebar a:hover {
-            background-color: #f0f5f9; /* Use your preferred hover background color */
+            background-color: #555; /* Use your preferred hover background color */
         }
 
         /* Main content styles */
@@ -47,21 +91,18 @@
             padding: 20px;
         }
 
-        /* Header styles */
-        .header {
-            background-color: #f0f5f9; /* Use your preferred header background color */
-            padding: 10px 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Page title styles */
-        .page-title {
-            font-size: 24px;
-            margin-bottom: 20px;
+        .container {
+            margin-top: 100px;
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <h1 class="page-title">Admin Dashboard</h1>
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
@@ -72,12 +113,6 @@
 
     <!-- Main content -->
     <div class="content">
-        <!-- Header -->
-        <div class="header">
-            <h1 class="page-title">Dashboard</h1>
-            <a href="#">Logout</a>
-        </div>
-
         <!-- Content area -->
         <div class="container">
             <div class="row">
@@ -89,24 +124,32 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <!-- Add any additional statistics or content here -->
+                </div>
+            </div>
 
-            <!-- Add the table here -->
+            <!-- User table -->
+            <h2 class="page-title mt-4">User List</h2>
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Username</th>
-                        <th>E-Mail</th>
+                        <th>Email</th>
                         <th>City</th>
-                        <th>Remove User</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for nuser in useer.users %}
+                    {% for user in users %}
                     <tr>
-                        <td>{{ nuser.username }}</td>
-                        <td>{{ nuser.email }}</td>
-                        <td>{{ nuser.city }}</td>
-                        <td><button type="submit" class="btn btn-danger mr-2">Block</button></td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.city }}</td>
+                        <td>
+                            <!-- Add any action buttons for each user here -->
+                            <button class="btn btn-danger">Block</button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

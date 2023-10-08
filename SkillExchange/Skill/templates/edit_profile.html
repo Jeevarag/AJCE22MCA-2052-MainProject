@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <title>Edit Profile</title>
     <style>
         body {
-            font-family: 'Urbanist', sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background-color: #dbe9f6;
             margin: 0;
             padding: 0;
@@ -58,7 +59,10 @@
             display: flex;
             padding: 20px;
             border-radius: 20px;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
         }
+
 
         .edit-left {
             flex: 1;
@@ -174,13 +178,12 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="edit-left">
-                <div class="profile-picture" {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture">
+                <div class="profile-picture" {% if user.profile_picture %} >
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" style=" width: 150px; height: 150px; border-radius: 50%;">
                 {% else %}
                 <!-- Display a placeholder or default image if no profile picture exists -->
                 <img src="{% static 'Images/profile_default.png' %}" alt="Default Profile Picture">
-                {% endif %}
-                    
+                {% endif %}   
                 </div>
                 <input type="file" name="profile_picture" accept="image/*">
                 <button class="edit-profile-button" type="submit">Change Profile Picture</button>
