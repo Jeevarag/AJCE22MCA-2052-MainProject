@@ -53,8 +53,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'email',
         ],
         'APP': {
-            'client_id': '653220277846-988sdqqrm75ss4ep72o5hp5350lkekff.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': '',
+            'secret': '',
             'key': '',
         },
         'AUTH_PARAMS': {
@@ -155,8 +155,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'jeevaragnp2024b@mca.ajce.in'
-EMAIL_HOST_PASSWORD = 'Jeevan1234@'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 AUTHENTICATION_BACKENDS = {
     'django.contrib.auth.backends.ModelBackend',
