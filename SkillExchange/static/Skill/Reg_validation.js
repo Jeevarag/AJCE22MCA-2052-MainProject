@@ -26,6 +26,8 @@ function validateUsername() {
         usernameError.textContent = 'Username must start with a letter and contain only letters and numbers.';
         usernameError.style.color = 'red';
     } else {
+        usernameError.textContent = '';
+        
         // Send an AJAX request to check if the username is available
         fetch(`/check_username/?username=${usernameValue}`)
             .then(response => response.json())
@@ -36,9 +38,14 @@ function validateUsername() {
                 } else {
                     usernameError.textContent = '';
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle the error here, e.g., show an error message
             });
     }
 }
+
 
 function validateEmail() {
     const emailInput = document.getElementById('email');
@@ -101,31 +108,38 @@ function validateConfirmPassword() {
     } 
 }
 
-function validateForm() {
-    const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm_password');
-    const usernameValue = usernameInput.value.trim();
-    const emailValue = emailInput.value.trim();
-    const passwordValue = passwordInput.value.trim();
-    const confirmPasswordValue = confirmPasswordInput.value.trim();
-
-    // Example: Check if any field is empty
-    if (usernameValue === '' || emailValue === '' || passwordValue === '' || confirmPasswordValue === '') {
-        alert('Please fill in all fields.');
-        return false;
+function submitForm(e) {
+    // Check if any error messages exist
+    if (
+      usernameError.textContent ||
+      emailError.textContent ||
+      passwordError.textContent ||
+      confirmPasswordError.textContent
+    ) {
+      e.preventDefault(); // Prevent form submission if there are errors
     }
+  }
 
-    // Perform additional validations here
-    // For example, you can call your other validation functions like validateUsername, validateEmail, etc.
-    // If any of these functions return false, return false here as well to prevent form submission
+  // Event listener for form submission
+  document.getElementById("registrationForm").addEventListener("submit", submitForm);
 
-    if (!validateUsername() || !validateEmail() || !validatePassword() || !validateConfirmPassword()) {
-        return false;
-    }
+// function validateForm() {
+//     const usernameInput = document.getElementById('username');
+//     const emailInput = document.getElementById('email');
+//     const passwordInput = document.getElementById('password');
+//     const confirmPasswordInput = document.getElementById('confirm_password');
+//     const usernameValue = usernameInput.value.trim();
+//     const emailValue = emailInput.value.trim();
+//     const passwordValue = passwordInput.value.trim();
+//     const confirmPasswordValue = confirmPasswordInput.value.trim();
 
-    return true;
-}
+//     // Example: Check if any field is empty
+//     if (usernameValue === '' || emailValue === '' || passwordValue === '' || confirmPasswordValue === '') {
+//         alert('Please fill in all fields.');
+//         return false;
+//     }
 
 
+
+//     return true;
+// }
