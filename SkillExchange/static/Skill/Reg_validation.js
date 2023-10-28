@@ -26,8 +26,7 @@ function validateUsername() {
         usernameError.textContent = 'Username must start with a letter and contain only letters and numbers.';
         usernameError.style.color = 'red';
     } else {
-        usernameError.textContent = '';
-        
+    
         // Send an AJAX request to check if the username is available
         fetch(`/check_username/?username=${usernameValue}`)
             .then(response => response.json())

@@ -21,3 +21,6 @@ class UserSkill(models.Model):
         return self.name
 
 
+
+
+

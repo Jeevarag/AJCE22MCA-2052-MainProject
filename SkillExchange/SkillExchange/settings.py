@@ -53,8 +53,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'email',
         ],
         'APP': {
-            'client_id': '',
-            'secret': '',
+            'client_id': '653220277846-988sdqqrm75ss4ep72o5hp5350lkekff.apps.googleusercontent.com',
+            'secret': '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',
             'key': '',
         },
         'AUTH_PARAMS': {

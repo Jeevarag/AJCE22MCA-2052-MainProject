@@ -1,18 +1,13 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <!-- Include the Montserrat font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-    <!-- Include Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Add custom CSS styles for the admin dashboard here */
 
-        /* Body styles */
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f0f5f9; /* Use your preferred background color */
@@ -95,19 +90,6 @@
         .container {
             margin-top: 100px;
         }
-        /* Add custom CSS styles for profile pictures */
-        .profile-picture {
-            width: 70%;
-            height: 70%;
-            /* overflow: hidden; */
-            border-radius: 50%;
-        }
-
-        .profile-picture img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%; 
-        }
     </style>
 </head>
 <body>
@@ -121,7 +103,8 @@
     <div class="sidebar">
         <ul>
             <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Users</a></li>
+            <li><a href="{% url 'admin_index' %}">Users</a></li>
+            <!-- <li><a href="">Blocked users</a></li> -->
         </ul>
     </div>
 
@@ -148,33 +131,41 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Profile Picture</th> 
                         <th>Username</th>
                         <th>Email</th>
                         <th>City</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td>
-                            {% if user.profile_picture %}
-                            <div class="profile-picture">
-                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }} Profile Picture">
-                            </div>
-                            {% else %}
-                            <div class="profile-picture">
-                                <img src="{% static 'Images/profile_default.png' %}" alt="">
-                            </div>
-                            {% endif %}
-                        </td>
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>{{ user.city }}</td>
                         <td>
+                            {% if user.is_active %}
+                                Active
+                            {% else %}
+                                Deactivated
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                                    <form method="post" action="{% url 'deactivate_user' user.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Deactivate</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{% url 'activate_user' user.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success">Activate</button>
+                                    </form>
+                            {% endif %}
                             <!-- Add any action buttons for each user here -->
-                            <button class="btn btn-danger">Block</button>
+                            <!-- <a href="{% url 'deactivate_user' user.id %}" class="btn btn-danger">Deactivate</a>
+                            <a href="{% url 'activate_user' user.id %}" class="btn btn-success">Activate</a> -->
                         </td>
                     </tr>
                     {% endfor %}
@@ -182,6 +173,15 @@
             </table>
         </div>
     </div>
+    <script>
+        function confirmBlock(username, userId) {
+            console.log('Button clicked'); // Add this line to check if the function is called
+            if (confirm(`Do you want to block ${username}?`)) {
+                // If the admin confirms, redirect to the block_user view
+                window.location.href = `/block_user/${userId}`;
+            }
+        }
+    </script>
 
     <!-- Include Bootstrap JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

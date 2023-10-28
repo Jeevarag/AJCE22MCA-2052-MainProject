@@ -17,4 +17,7 @@ class SkillForm(forms.ModelForm):
         model = UserSkill
         fields = ['name', 'description']
 
+class UserSearchForm(forms.Form):
+    query = forms.CharField(label='Skill', max_length=100)
+
 

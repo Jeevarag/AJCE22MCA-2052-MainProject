@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <title>My Profile</title>
     <style>
         body {
-            font-family: 'Urbanist', sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background-color: #dbe9f6;
             margin: 0;
             padding: 0;
@@ -153,7 +154,9 @@
             <p>
                 {{ user.about_me }}
             </p>
-            <a href="{% url 'edit_profile' %}"><button class="edit-profile-button">Edit Profile</button></a>
+            {% if user == request.user %}
+                <a href="{% url 'edit_profile' %}"><button class="edit-profile-button">Edit Profile</button></a>
+            {% endif %}
         </div>
         <div class="profile-right">
             <h2>Skills</h2>
@@ -162,7 +165,9 @@
                     <li>{{ skill.name }} - {{ skill.description }}</li>
                 {% endfor %}
             </ul>
-            <a href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
+            {% if user == request.user %}
+                <a href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
+            {% endif %}
         </div>
     </div>
     

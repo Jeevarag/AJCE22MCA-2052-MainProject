@@ -1,0 +1,32 @@
+<!-- blocked_users.html -->
+{% extends "admin_index.html" %}
+
+{% block content %}
+<h2 class="page-title">Blocked Users</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>City</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for blocked_user in blocked_users %}
+        <tr>
+            <td>{{ blocked_user.blocked_user.username }}</td>
+            <td>{{ blocked_user.blocked_user.email }}</td>
+            <td>{{ blocked_user.blocked_user.city }}</td>
+            <td>
+                <!-- Add action to unblock each user -->
+                <form method="post" action="{% url 'block_user' blocked_user.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-success" type="submit">Unblock</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
