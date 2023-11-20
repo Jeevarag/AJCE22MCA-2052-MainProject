@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import CustomUser, UserSkill
+from .models import CustomUser, UserSkill, UserLocation
 
 # Register your models here.
 class UserDetailsAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'city', 'about_me')
+    list_display = ('username', 'email', 'about_me')
 
     def get_queryset(self, request):
         # Get the original queryset

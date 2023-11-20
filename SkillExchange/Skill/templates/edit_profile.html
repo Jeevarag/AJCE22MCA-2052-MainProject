@@ -49,6 +49,9 @@
             color: #5c5c5c;
             text-align: center;
             padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
         }
 
         .edit-container {
@@ -157,15 +160,110 @@
             background-color: #658da9;
         }
     </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var config = {
+                cURL: "https://api.countrystatecity.in/v1/countries/",
+                cKEY: "eUlyT3FwQnJTcUFEY200ZElHRnBibkVqcGt2eEo2SnJ0Zkw0NXM3bw==",
+            };
+            var countrySelect = document.getElementById("country");
+            var stateSelect = document.getElementById("state");
+            var citySelect = document.getElementById("city");
+    
+            countrySelect.addEventListener("change", loadStates);
+            stateSelect.addEventListener("change", loadCities);
+    
+            function loadCountries() {
+                console.log("Loading countries...");
+                let apiEndPoint = config.cURL;
+    
+                fetch(apiEndPoint, { headers: { "X-CSCAPI-KEY": config.cKEY } })
+                    .then((Response) => Response.json())
+                    .then((data) => {
+                        if (data && data.length > 0) {
+                            data.forEach((country) => {
+                                const option = document.createElement("option");
+                                option.value = country.iso2;
+                                option.textContent = country.name;
+                                countrySelect.appendChild(option);
+                            });
+                        } else {
+                            console.error("No countries data received.");
+                        }
+                    })
+                    .catch((error) => console.error("Error Loading Countries:", error));
+            }
+    
+            function loadStates() {
+                const selectedCountry = countrySelect.value;
+                console.log("Loading states...");
+                let apiEndPoint = `${config.cURL}${selectedCountry}/states`;
+    
+                // Define stateSelect at a higher scope
+                stateSelect.innerHTML = "<option value='' selected disabled>Please Select your State";
+                citySelect.innerHTML = "<option value='' selected disabled>Please Select your City";
+    
+                fetch(apiEndPoint, { headers: { "X-CSCAPI-KEY": config.cKEY } })
+                    .then((Response) => Response.json())
+                    .then((data) => {
+                        if (!data) {
+                            stateSelect.innerHTML =
+                                "<option value='/' selected disabled>No States in the Selected Country";
+                            citySelect.innerHTML =
+                                "<option value='/' selected disabled>No City Names in the Selected Country Option";
+                            return true;
+                        }
+                        data.forEach((state) => {
+                            const option = document.createElement("option");
+                            option.value = state.iso2;
+                            option.textContent = state.name;
+                            stateSelect.appendChild(option);
+                        });
+                    })
+                    .catch((error) => console.error("Error Loading State:", error));
+            }
+    
+            function loadCities() {
+                const selectedCountry = countrySelect.value;
+                const selectedState = stateSelect.value;
+                console.log("Loading cities...");
+                let apiEndPoint = `${config.cURL}${selectedCountry}/states/${selectedState}/cities`;
+
+                // Define citySelect at a higher scope
+                citySelect.innerHTML = "<option value=''>Select Your City";
+
+                fetch(apiEndPoint, { headers: { "X-CSCAPI-KEY": config.cKEY } })
+                    .then((Response) => Response.json())
+                    .then((data) => {
+                        if (!data) {
+                            citySelect.innerHTML = "<option value='/' selected disabled>No City";
+                            return false;
+                        }
+                        data.forEach((city) => {
+                            const option = document.createElement("option");
+                            option.value = city.iso2;
+                            option.textContent = city.name;
+                            citySelect.appendChild(option);
+                        });
+                    })
+                    .catch((error) => console.error("Error Loading City:", error));
+            }
+
+    
+            // You can call the loadCountries function when the page loads
+            loadCountries();
+        });
+    </script>
+    
 </head>
 <body>
     <header>
         <nav>
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="{% url 'about_us' %}">About</a></li>
                 <li><a href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
         </nav>
             <div class="user-info">
@@ -175,14 +273,14 @@
     </header>
 
     <div class="edit-container">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="editForm">
             {% csrf_token %}
             <div class="edit-left">
                 <div class="profile-picture" {% if user.profile_picture %} >
                     <img src="{{ user.profile_picture.url }}" alt="Profile Picture" style=" width: 150px; height: 150px; border-radius: 50%;">
                 {% else %}
                 <!-- Display a placeholder or default image if no profile picture exists -->
-                <img src="{% static 'Images/profile_default.png' %}" alt="Default Profile Picture">
+                <img src="{% static 'Images/profile.jpg' %}" alt="Default Profile Picture" style=" width: 150px; height: 150px; border-radius: 50%;">
                 {% endif %}   
                 </div>
                 <input type="file" name="profile_picture" accept="image/*">
@@ -192,10 +290,36 @@
                 <h2>Edit About Me</h2>
                 <textarea name="about_me" rows="5">{{ user.about_me }}</textarea>
                 <!-- Move the "City" label and input field here -->
+                <div class="country-edit">
+                    <label for="country">Country:</label>
+                    <select name="country" id="country" autocomplete="country-name">
+                        <option value="" selected disabled>Please Select a Country</option>
+                        {% for country in countries %}
+                            <option value="{{ country.id }}" {% if country.id == user_country %}selected{% endif %}>{{ country.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- Hidden input field to store the selected country value -->
+                    <input type="hidden" name="selectedCountry" id="selectedCountryText">
+                </div>
+                
+                <div class="state-edit">
+                    <label for="state">State:</label>
+                    <select name="state" id="state" onchange="loadCities()">
+                        <option value="" selected disabled>Please Select a State</option>
+                    </select>
+                    <!-- Hidden input field to store the selected state value -->
+                    <input type="hidden" name="selectedState" id="selectedStateText">
+                </div>
+                
                 <div class="city-edit">
                     <label for="city">City:</label>
-                    <input type="text" name="city" id="city" value="{{ user.city }}">
+                    <select name="city" id="city">
+                        <option value="" selected disabled>Please Select a City</option>
+                    </select>
+                    <!-- Hidden input field to store the selected city value -->
+                    <input type="hidden" name="selectedCity" id="selectedCityText">
                 </div>
+                
                 <button class="save-profile-button" type="submit">Save Profile</button>
             </div>
         </form>
@@ -220,5 +344,7 @@
             });
         });
     </script>
+    <!-- Inject Script -->
+    <script src="{% static 'Skill/loadData.js' %}"></script>
 </body>
 </html>

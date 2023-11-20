@@ -127,13 +127,12 @@
                 </ul>
             </div>
             {% endif %}
-            <button type="submit" class="btn btn-primary">Login</button><br><br>
+            <center><button type="submit" class="btn btn-primary">Login</button></center>
         </form>
         <hr> <!-- Add a horizontal line for separation -->
         <!-- "Login with Google" button -->
         {% load socialaccount %}
-        <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-primary">Login with Google</a>
-        <br><br>
+        <!-- <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-primary">Login with Google</a> -->
         <center><a href="{% url 'password_reset' %}" class="link">Forgot Password?</a></center><br>
         Don't have an account <a href="{% url 'register' %}" class="link">Create an account</a>
     </div>

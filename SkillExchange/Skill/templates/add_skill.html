@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Add Skill</title>
     <style>
         body {
-            font-family: 'Urbanist', sans-serif;
-            background-color: #dbe9f6;
+            font-family: 'Montserrat';
+            background-image: url("{% static 'Images/skillss.jpg' %}");
             margin: 0;
             padding: 0;
         }
@@ -48,6 +49,9 @@
             color: #5c5c5c;
             text-align: center;
             padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
         }
 
         .edit-container {
@@ -60,19 +64,11 @@
             border-radius: 20px;
         }
 
-        .edit-left {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Center the content horizontally */
-        }
-
         .edit-right {
             flex: 1;
             padding: 20px;
-            text-align: left;
+            text-align: center;
+            margin-left: 100px;
         }
 
         .profile-picture {
@@ -176,9 +172,9 @@
         <nav>
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="{% url 'about_us' %}">About</a></li>
                 <li><a href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
         </nav>
         <div class="user-info">
@@ -190,9 +186,6 @@
     <div class="edit-container">
         <form method="post" enctype="multipart/form-data" action="{% url 'add_skill' %}">
             {% csrf_token %}
-            <div class="edit-left">
-                <!-- Your profile picture and other fields here -->
-            </div>
             <div class="edit-right">
                 <h2>Add Skill</h2>
                 <div class="skills-edit">
@@ -203,12 +196,13 @@
                     <label for="id_description">Skill Description:</label>
                     <textarea name="description" id="id_description" rows="4" placeholder="Enter skill description"></textarea>
                 </div>
-                <button class="add-skill-button" type="submit">Add Skill</button>
+                <button class="btn btn-primary" type="submit">Add Skill</button>
             </div>
         </form>
+        
     </div>
 
-    <footer>
+    <footer>    
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
     <script>

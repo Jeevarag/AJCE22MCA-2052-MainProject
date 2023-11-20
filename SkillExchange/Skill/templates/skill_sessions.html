@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>Skill Session</title>
+    </head>
+    <body>
+        {% block content %}
+        <h2>Skill Sessions</h2>
+        <ul>
+            {% for session in skill_sessions %}
+            <li>
+                {{ session.skill_request.sender.username }} - {{ session.skill_request.skill.name }} - {{ session.date_and_time }}
+                {% if session.status == 'scheduled' %}
+                <form method="post" action="{% url 'mark_attendance' session.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Mark Attendance</button>
+                </form>
+                {% else %}
+                {{ session.status }}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endblock %}
+    </body>
+    
+</html>

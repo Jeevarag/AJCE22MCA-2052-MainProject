@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>My Profile</title>
     <style>
         body {
@@ -48,6 +50,9 @@
             color: #5c5c5c;
             text-align: center;
             padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
         }
 
         .profile-container {
@@ -68,11 +73,11 @@
 
         .profile-right {
             flex: 1;
-            padding: 20px;
+            padding: 10px;
             text-align: center;
             display: flex;
             flex-direction: column;
-      
+
         }
 
         .profile-picture {
@@ -84,7 +89,8 @@
             background-position: left;
         }
 
-        .edit-profile-button, .add-skill-button {
+        .edit-profile-button,
+        .add-skill-button {
             display: inline-block;
             padding: 10px 20px;
             background-color: #80a4c2;
@@ -93,10 +99,12 @@
             border-radius: 5px;
             text-decoration: none;
             transition: background-color 0.3s;
-            margin-top: 10px; /* Adjust the margin to create spacing */
+            margin-top: 10px;
+            /* Adjust the margin to create spacing */
         }
 
-        .edit-profile-button:hover, .add-skill-button:hover {
+        .edit-profile-button:hover,
+        .add-skill-button:hover {
             background-color: #658da9;
         }
 
@@ -109,6 +117,7 @@
         .skills li {
             margin-bottom: 10px;
         }
+
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -123,33 +132,73 @@
         .btn:hover {
             background-color: #658da9;
         }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Initially hidden */
+            width: 300px;
+            height: 100%;
+            background-color: #f0f5f9;
+            transition: left 0.3s;
+            z-index: 1;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 20px;
+            text-decoration: none;
+            color: #5c5c5c;
+        }
+
+        .sidebar-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <header>
+        {% if user == request.user %}<i class="fas fa-bars sidebar-button" onclick="toggleSidebar()"></i>{% endif %}
         <nav>
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="{% url 'about_us' %}">About</a></li>
                 <li><a href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
         </nav>
-            <div class="user-info">
-                <p>Hello, {{ user.username }}!</p>
-                <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
-            </div>
+        <div class="user-info">
+            <p>Hello, {{ user.username }}</p>
+            <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
+        </div>
     </header>
+
+    <div class="sidebar" id="sidebar">
+            {% if user == request.user %}
+                <a href="{% url 'skill_requests' %}" id="check_request">Requests</a>
+                <a href="{% url 'sent_skill_requests' %}" id="sent_requests">View Sent Skill Requests</a>
+                <a href="{% url 'session_schedule'  %}">Sessions scheduled</a>
+            {% endif %}
+    </div>
 
     <div class="profile-container">
         <div class="profile-left">
-                {% if user.profile_picture %}
-                    <div class="profile-picture" style="background-image: url('{{ user.profile_picture.url }}');"></div>
-                {% else %}
-                    <div class="profile-picture" style="background-image: url('/static/Images/profile_default.png');"></div>
-                {% endif %}
-                <p>{{ user.username }}</p>
-                <p>{{ user.city }}</p> <!-- Display the user's city here -->
+            {% if user.profile_picture %}
+                <div class="profile-picture" style="background-image: url('{{ user.profile_picture.url }}');"></div>
+            {% else %}
+                <div class="profile-picture" style="background-image: url('/static/Images/profile.jpg');"></div>
+            {% endif %}
+            <p>{{ user.username }}</p>
+            {% if user_location %}
+                <p>
+                    {{ user_location.city }}, {{ user_location.state }}, {{ user_location.country }}
+                </p>
+            {% endif %}
             <h2>About Me</h2>
             <p>
                 {{ user.about_me }}
@@ -159,6 +208,19 @@
             {% endif %}
         </div>
         <div class="profile-right">
+            <p>Followers: {{ user.followers_count }}</p>
+            <p>Following: {{ user.following_count }}</p>
+            {% if user != request.user %}
+                {% if follow %}
+                    {% if follow.is_following %}
+                        <a href="{% url 'follow_user' %}?uf=0&id={{user.id}}" class="btn btn-primary md-1">Unfollow</a>
+                    {% else %}
+                        <a href="{% url 'follow_user' %}?f=0&id={{user.id}}" class="btn">Follow</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'follow_user' %}?nf=0&id={{user.id}}" class="btn">Follow</a>
+                {% endif %}
+            {% endif %}
             <h2>Skills</h2>
             <ul>
                 {% for skill in user_skills %}
@@ -167,28 +229,64 @@
             </ul>
             {% if user == request.user %}
                 <a href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
+            {% else %}
+                <form method="post" action="{% url 'send_skill_request' user.id %}">
+                    {% csrf_token %}
+                    <label for="request_message">Send a Skill Request:</label>
+                    <textarea id="request_message" name="message" rows="4" cols="50"></textarea>
+                    <button type="submit" class="btn btn-primary">Send Request</button>
+                </form>
             {% endif %}
         </div>
     </div>
-    
 
     <footer>
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
+
     <script>
-        // Wait for the document to be fully loaded
         document.addEventListener("DOMContentLoaded", function () {
-            // Find the logout button by its ID
-            var logoutButton = document.getElementById("logout-link");
-    
-            // Add a click event listener to the logout button
-            logoutButton.addEventListener("click", function () {
-                // Reload the page after a short delay (you can adjust the delay as needed)
-                setTimeout(function () {
-                    location.reload();
-                }, 1000); // Reload after 1 second (1000 milliseconds)
-            });
+        // Find the logout button by its ID
+        var logoutButton = document.getElementById("logout-link");
+
+        // Add a click event listener to the logout button
+        logoutButton.addEventListener("click", function () {
+            // Reload the page after a short delay (you can adjust the delay as needed)
+            setTimeout(function () {
+                location.reload();
+            }, 1000); // Reload after 1 second (1000 milliseconds)
         });
+
+        // Add a click event listener to the document
+        document.addEventListener("click", function (event) {
+            var sidebar = document.getElementById("sidebar");
+            var sidebarButton = document.querySelector(".sidebar-button");
+
+            // Check if the click is outside the sidebar and sidebar button
+            if (
+                event.target !== sidebar &&
+                !sidebar.contains(event.target) &&
+                event.target !== sidebarButton &&
+                !sidebarButton.contains(event.target)
+            ) {
+                // Collapse the sidebar
+                sidebar.style.left = "-300px";
+            }
+        });
+    });
+
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        if (sidebar.style.left === "0px" || sidebar.style.left === "") {
+            sidebar.style.left = "-300px";
+        } else {
+            sidebar.style.left = "0px";
+        }
+    }
     </script>
 </body>
 </html>
+            
+        
+
+

@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>My Profile</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            /* background-color: #dbe9f6; */
+            margin: 0;
+            padding: 0;
+            background-image: url("{% static 'Images/collab.jpg' %}"); /* Set your image path */
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin: 0 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(240, 245, 249, 0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #80a4c2; /* You can replace this with an actual image URL */
+            background-size: cover;
+            background-position: left;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #80a4c2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #658da9;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-container"></div>
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'about_us' %}">About</a></li>
+                    <li><a href="{% url 'profile' %}">My profile</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                </ul>
+            </nav>
+                <div class="user-info">
+                    <p>Hello, {{ user.username }}!</p>
+                    <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
+                </div>
+        </header>
+
+        <div class="profile-container">
+            <div class="profile-left">
+                <h1>Your Sent Skill Requests</h1>
+                <ul>
+                    {% for request in sent_requests %}
+                        <li>
+                            Request to {{ request.receiver.username }}:
+                            Status: {{ request.status }}
+                        </li>
+                    {% empty %}
+                        <p>You haven't sent any skill requests yet.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener("DOMContentLoaded", function () {
+            // Find the logout button by its ID
+            var logoutButton = document.getElementById("logout-link");
+    
+            // Add a click event listener to the logout button
+            logoutButton.addEventListener("click", function () {
+                // Reload the page after a short delay (you can adjust the delay as needed)
+                setTimeout(function () {
+                    location.reload();
+                }, 1000); // Reload after 1 second (1000 milliseconds)
+            });
+        });
+    </script>
+</body>
+</html>

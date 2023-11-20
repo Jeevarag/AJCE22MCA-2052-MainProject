@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import requests
+from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm
 from django.http import JsonResponse
+from django.http import HttpResponse
 from django.contrib import messages
-from .forms import SkillForm, UserSearchForm 
+from .forms import SkillForm, UserSearchForm
+from django.contrib.auth import get_user
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
@@ -16,12 +19,17 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+#from .skills import SKILLS
+from django.utils import timezone
+from datetime import timedelta
 
 
 # Create your views here.
 
 def index(request):
     return render(request, 'index.html')
+
 
 @login_required(login_url='login')
 def home(request):
@@ -55,54 +63,128 @@ def user_login(request):
         username = request.POST['username']
         password = request.POST['password']
 
-        if username == "jeejay" and password == "jee123":
-            # For the superuser, redirect to admin_index.html with user list and count
-            users = CustomUser.objects.exclude(is_superuser='1')  # Exclude superusers
-            user_count = users.count()
-            context = {
-                "users": users,
-                "user_count": user_count
-            }
-            return render(request, 'admin_index.html', context)
-        else:
     # For regular users, attempt to authenticate
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                request.session['username'] = user.username
-                return redirect('home')
-            else:
-                messages.error(request, 'Invalid credentials!!')  # Set the error message
-                return render(request, 'login.html')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and not user.is_superuser:
+            login(request, user)
+            request.session['username'] = user.username
+            return redirect('home')
+        elif user is not None and user.is_superuser:
+            login(request, user)
+            request.session['username'] = user.username
+            return redirect('admin_index')
+        else:
+            # Set the error message
+            messages.error(request, 'Invalid credentials!!')
+            return render(request, 'login.html')
 
     return render(request, 'login.html')
 
 
 @login_required(login_url='login')
+def follow_user(request):
+    if 'nf' in request.GET:
+        condition = request.GET['nf']
+        other_UserID = request.GET['id']
+        otherF = CustomUser.objects.get(id=other_UserID)
+        foll = Follower(follower=request.user,
+                        following=otherF, is_following=True)
+        foll.save()
+        return redirect('profile')
+    elif 'f' in request.GET:
+        condition = request.GET['f']
+        other_UserID = request.GET['id']
+        otherF = CustomUser.objects.get(id=other_UserID)
+        foll = Follower.objects.get(
+            Q(follower=request.user) & Q(following=other_UserID))
+        foll.is_following = True
+        foll.save()
+        return redirect('profile')
+    else:
+        condition = request.GET['uf']
+        other_UserID = request.GET['id']
+        otherF = CustomUser.objects.get(id=other_UserID)
+        try:
+            foll = Follower.objects.get(
+                follower=request.user, following=otherF, is_following=False)
+            foll.delete()
+        except Follower.DoesNotExist:
+            pass
+        return redirect('profile')
+
+
+@login_required(login_url='login')
 def edit_profile(request):
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if not UserLocation.objects.filter(user=request.user.id).exists():
+            us_loc = CustomUser.objects.get(id=request.user.id)
+            city = request.POST['selectedCity']
+            state = request.POST['selectedState']
+            country = request.POST['selectedCountry']
+            location = UserLocation(
+                country=country, state=state, city=city, user=us_loc)
+            location.save()
+        else:
+            location = UserLocation.objects.get(user=request.user.id)
+            location.country = request.POST['selectedCountry']
+            location.state = request.POST['selectedState']
+            location.city = request.POST['selectedCity']
+            location.save()
+        form = CustomUserChangeForm(
+            request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('profile')
+        # user_location = UserLocation.objects.get(id=request.user.id)
+        return redirect('profile')
     else:
         form = CustomUserChangeForm(instance=request.user)
 
-    return render(request, 'edit_profile.html', {'form': form})
+    return render(request, 'edit_profile.html', {'form': form,
+                                                 'location_form': False,
+                                                 'user_location': False,
+                                                 })
+
 
 @login_required(login_url='login')
 def view_profile(request):
     user_profile = CustomUser.objects.get(id=request.user.id)
-    user_skills = user_profile.skills.all() 
-    return render(request, 'profile.html', {'user_profile': user_profile, 'user_skills': user_skills})
+
+    # Fetch the UserLocation data for the user
+    try:
+        user_location = UserLocation.objects.get(user=user_profile)
+    except UserLocation.DoesNotExist:
+        user_location = None
+
+    user_skills = user_profile.skills.all()
+
+    # Check if the logged-in user is following the displayed user
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follower.objects.filter(
+            follower=request.user, following=user_profile).exists()
+    return render(request, 'profile.html', {
+        'user_profile': user_profile,
+        'user_skills': user_profile.skills.all(),
+        'user_location': user_location,
+        'is_following': is_following,
+    })
 
 
 @login_required(login_url='login')
 def view_other_user_profile(request, username):
     user_profile = CustomUser.objects.get(username=username)
     user_skills = user_profile.skills.all()
-
-    return render(request, 'profile.html', {'user': user_profile, 'user_skills': user_skills})
+    data = {
+        'user': user_profile,
+        'user_skills': user_skills,
+        'follow': False
+    }
+    if Follower.objects.filter(follower=request.user.id).exists():
+        if Follower.objects.filter(Q(follower=request.user.id) & Q(following=user_profile.id)).exists():
+            follow = Follower.objects.get(
+                Q(follower=request.user.id) & Q(following=user_profile.id))
+            data['follow'] = follow
+    return render(request, 'profile.html', data)
 
 
 def user_logout(request):
@@ -110,9 +192,17 @@ def user_logout(request):
         logout(request)
     return redirect('login')
 
+
 @login_required(login_url='login')
 def admin_index(request):
-    return render(request, 'admin_index.html')
+    all_users = CustomUser.objects.exclude(
+        is_superuser='1')  # Exclude superusers
+    user_count = all_users.count()
+    context = {
+        "all_users": all_users,
+        "user_count": user_count
+    }
+    return render(request, 'admin_index.html', context)
 
 
 @login_required(login_url='login')
@@ -123,12 +213,13 @@ def add_skill(request):
             skill = skill_form.save(commit=False)
             skill.user = request.user  # Link the skill to the authenticated user
             skill.save()
-            return redirect('profile')  # Redirect to the profile page after adding the skill
+            # Redirect to the profile page after adding the skill
+            return redirect('profile')
     else:
         skill_form = SkillForm()
 
     context = {
-        'skill_form': skill_form 
+        'skill_form': skill_form
     }
 
     return render(request, 'add_skill.html', context)
@@ -151,19 +242,22 @@ def deactivate_user(request, user_id):
     if user.is_active:
         user.is_active = False
         user.save()
-         # Send deactivation email
+        # Send deactivation email
         subject = 'Account Deactivation'
         message = 'Your account has been deactivated by the admin.'
         from_email = 'jeevaragnp2024b@mca.ajce.in'  # Replace with your email
         recipient_list = [user.email]
-        html_message = render_to_string('deactivation_mail.html', {'user': user})
+        html_message = render_to_string(
+            'deactivation_mail.html', {'user': user})
 
-        send_mail(subject, message, from_email, recipient_list, html_message=html_message)
+        send_mail(subject, message, from_email,
+                  recipient_list, html_message=html_message)
 
-        messages.success(request, f"User '{user.username}' has been deactivated, and an email has been sent.")
     else:
-        messages.warning(request, f"User '{user.username}' is already deactivated.")
+        messages.warning(
+            request, f"User '{user.username}' is already deactivated.")
     return redirect('admin_index')
+
 
 def activate_user(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
@@ -176,14 +270,174 @@ def activate_user(request, user_id):
         recipient_list = [user.email]
         html_message = render_to_string('activation_mail.html', {'user': user})
 
-        send_mail(subject, message, from_email, recipient_list, html_message=html_message)
+        send_mail(subject, message, from_email,
+                  recipient_list, html_message=html_message)
     else:
         messages.warning(request, f"User '{user.username}' is already active.")
     return redirect('admin_index')
 
 
+def contact(request):
+    return render(request, 'contact.html')
 
 
+def about_us(request):
+    return render(request, 'about_us.html')
 
 
+def learn(request):
+    users = CustomUser.objects.exclude(Q(is_superuser='1') | Q(
+        id=request.user.id))  # Exclude superusers
+    user_count = users.count()
+    context = {
+        "users": users,
+        "user_count": user_count
+    }
+    return render(request, 'learn.html', context)
+
+
+def teach(request):
+    users = CustomUser.objects.exclude(Q(is_superuser='1') | Q(
+        id=request.user.id))  # Exclude superusers
+    user_count = users.count()
+    context = {
+        "users": users,
+        "user_count": user_count
+    }
+    return render(request, 'teach.html', context)
+
+
+def send_skill_request(request, receiver_id):
+    if request.method == 'POST':
+        receiver = get_object_or_404(CustomUser, id=receiver_id)
+        message = request.POST.get('message')
+        SkillRequest.objects.create(
+            sender=request.user, receiver=receiver, message=message, status='pending')
+        # Redirect to a success page or user profile
+        return redirect('profile', username=receiver.username)
+
+
+def accept_skill_request(request, request_id):
+    if request.method == 'POST':
+        skill_request = get_object_or_404(
+            SkillRequest, id=request_id, receiver=request.user, status='pending')
+        skill_request.status = 'accepted'
+        skill_request.save()
+
+        # Redirect to a form for scheduling the session
+        return redirect('schedule_session', request_id=skill_request.id)
+
+    # return render(request, 'accept_skill_request.html', {'skill_request': skill_request})
+
+
+def reject_skill_request(request, request_id):
+    if request.method == 'POST':
+        skill_request = get_object_or_404(
+            SkillRequest, id=request_id, receiver=request.user, status='pending')
+        skill_request.status = 'rejected'
+        skill_request.save()
+        # Redirect to a success page or user profile
+        return redirect('profile', username=request.user.username)
+
+
+def skill_requests(request):
+    pending_requests = SkillRequest.objects.filter(
+        receiver=request.user, status='pending')
+    return render(request, 'skill_requests.html', {'pending_requests': pending_requests})
+
+
+def sent_skill_requests(request):
+    # Fetch the skill requests sent by the current user
+    sent_requests = SkillRequest.objects.filter(sender=request.user)
+
+    return render(request, 'sent_skill_requests.html', {'sent_requests': sent_requests})
+
+
+def schedule_session(request, request_id):
+    skill_request = get_object_or_404(
+        SkillRequest, id=request_id, receiver=request.user, status='accepted')
+
+    if request.method == 'POST':
+        form = SkillSessionForm(request.POST)
+        if form.is_valid():
+            date_and_time = form.cleaned_data['date_and_time']
+            duration_minutes = form.cleaned_data['duration_minutes']
+
+            # Create a session for the accepted skill request
+            SkillSession.objects.create(
+                skill_request=skill_request,
+                date_and_time=date_and_time,
+                duration_minutes=duration_minutes,
+                status='scheduled'
+            )
+
+            messages.success(request, 'Skill session scheduled successfully!')
+            return redirect('profile', username=request.user.username)
+    else:
+        form = SkillSessionForm()
+
+    return render(request, 'schedule_session.html', {'form': form, 'skill_request': skill_request})
+
+
+def manage_session(request, session_id):
+    skill_session = get_object_or_404(SkillSession, id=session_id)
+
+    # Check if the current user is either the sender or the receiver
+    is_sender = skill_session.skill_request.sender == request.user
+    is_receiver = skill_session.skill_request.receiver == request.user
+
+    if not is_sender and not is_receiver:
+        messages.error(
+            request, 'You do not have permission to manage this session.')
+        return redirect('profile')  # Redirect to an appropriate page
+
+    # Check if the current time is within the scheduled time window
+    current_time = timezone.now()
+    scheduled_start_time = skill_session.date_and_time
+    scheduled_end_time = scheduled_start_time + \
+        timedelta(minutes=skill_session.duration_minutes)
+
+    if current_time < scheduled_start_time or current_time > scheduled_end_time:
+        messages.error(
+            request, 'Session has not started or has already ended.')
+        return redirect('profile')  # Redirect to an appropriate page
+
+    if request.method == 'POST':
+        if skill_session.status == 'scheduled':  # Only allow updates if the session is still scheduled
+            if 'mark_attended' in request.POST:
+                if is_receiver:
+                    skill_session.receiver_status = 'attended'
+                elif is_sender:
+                    skill_session.sender_status = 'attended'
+
+                # Check if both sender and receiver have attended
+                if skill_session.sender_status == 'attended' and skill_session.receiver_status == 'attended':
+                    skill_session.status = 'completed'
+            else:
+                if is_receiver:
+                    skill_session.receiver_status = 'absent'
+                elif is_sender:
+                    skill_session.sender_status = 'absent'
+
+                # Check if both sender and receiver are absent
+                if skill_session.sender_status == 'absent' and skill_session.receiver_status == 'absent':
+                    skill_session.status = 'abandoned'
+                else:
+                    skill_session.status = 'expired'
+
+            skill_session.save()
+            messages.success(request, 'Session status updated successfully.')
+            return redirect('profile')
+
+    return render(request, 'manage_sessions.html', {'skill_session': skill_session})
+
+
+def session_schedule(request):
+    # Fetch all skill sessions for the current user, regardless of status, and order by status
+    skill_sessions = SkillSession.objects.filter(
+        Q(skill_request__receiver=request.user) | Q(
+            skill_request__sender=request.user)
+    ).order_by('-status')
+
+    return render(request, 'session_schedule.html', {'skill_sessions': skill_sessions})
 
