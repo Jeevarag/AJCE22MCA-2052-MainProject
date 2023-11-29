@@ -1,8 +1,10 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
+from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+
 
 # Create your models here.
 class CustomUser(AbstractUser):
@@ -75,5 +77,15 @@ class SkillSession(models.Model):
 
     def __str__(self):
         return f"Skill Session for {self.skill_request.skill.name} with {self.skill_request.sender.username}"
+
+class Review(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_reviews')
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_reviews')
+    skill_session = models.ForeignKey(SkillSession, on_delete=models.CASCADE, related_name='reviews')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Review from {self.sender} to {self.receiver}'
 
 

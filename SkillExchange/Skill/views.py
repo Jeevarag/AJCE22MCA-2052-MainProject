@@ -5,7 +5,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -20,7 +20,7 @@ from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-#from .skills import SKILLS
+from .skills import SKILLS
 from django.utils import timezone
 from datetime import timedelta
 
@@ -148,6 +148,7 @@ def edit_profile(request):
 @login_required(login_url='login')
 def view_profile(request):
     user_profile = CustomUser.objects.get(id=request.user.id)
+    received_reviews = user_profile.received_reviews.all()
 
     # Fetch the UserLocation data for the user
     try:
@@ -167,6 +168,7 @@ def view_profile(request):
         'user_skills': user_profile.skills.all(),
         'user_location': user_location,
         'is_following': is_following,
+        'received_reviews': received_reviews,
     })
 
 
@@ -397,6 +399,17 @@ def manage_session(request, session_id):
     scheduled_end_time = scheduled_start_time + \
         timedelta(minutes=skill_session.duration_minutes)
 
+    if current_time > scheduled_end_time and skill_session.status == 'scheduled':
+        if is_receiver:
+            skill_session.receiver_status = 'absent'
+        elif is_sender:
+            skill_session.sender_status = 'absent'
+        skill_session.status = 'expired'
+        skill_session.save()
+        messages.success(request, 'Session status updated to "absent".')
+
+        return redirect('profile')
+
     if current_time < scheduled_start_time or current_time > scheduled_end_time:
         messages.error(
             request, 'Session has not started or has already ended.')
@@ -440,4 +453,38 @@ def session_schedule(request):
     ).order_by('-status')
 
     return render(request, 'session_schedule.html', {'skill_sessions': skill_sessions})
+
+
+def create_review(request, session_id):
+    skill_session = get_object_or_404(SkillSession, id=session_id)
+
+    if skill_session.status != 'completed':
+        messages.error(request, 'You can only review completed sessions.')
+        return redirect('profile')  # Adjust the redirect as needed
+
+    # Check if the current user is allowed to review
+    if request.user != skill_session.skill_request.sender:
+        messages.error(request, 'You are not allowed to review this session.')
+        return redirect('profile')  # Adjust the redirect as needed
+
+    if request.method == 'POST':
+        # Assuming you have a ReviewForm to handle the creation
+        form = ReviewForm(request.POST)
+
+        if form.is_valid():
+            # Create a new review instance and link it to the skill session
+            review = form.save(commit=False)
+            review.sender = request.user
+            review.receiver = skill_session.skill_request.receiver
+            review.skill_session = skill_session
+            review.save()
+            messages.success(request, 'Review posted successfully.')
+            return redirect('profile')  # Adjust the redirect as needed
+
+            # Other logic, redirect, or render as needed
+    else:
+        form = ReviewForm()  # Assuming you have a ReviewForm
+
+    return render(request, 'create_review.html', {'form': form, 'skill_session': skill_session})
+
 

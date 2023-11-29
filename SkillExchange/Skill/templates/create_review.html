@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Post review</title>
+    </head>
+    <body>
+        {% block content %}
+        <h2>Post a Review</h2>
+        <p>Review for session with {{ skill_session.skill_request.receiver.username }} on {{ skill_session.date_and_time }}.</p>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Post Review</button>
+        </form>
+        {% endblock %}
+    </body>
+</html>

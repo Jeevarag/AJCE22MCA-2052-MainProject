@@ -13,6 +13,9 @@
             background-color: #dbe9f6;
             margin: 0;
             padding: 0;
+            position: relative;
+            padding-bottom: 50px; /* Adjust as needed to avoid overlap with fixed footer */
+            min-height: 100vh;
         }
 
         header {
@@ -46,13 +49,14 @@
         }
 
         footer {
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            left: 0;
             background-color: #f0f5f9;
             color: #5c5c5c;
             text-align: center;
             padding: 10px 0;
-            position: absolute;
-            width: 100%;
-            bottom: 0;
         }
 
         .profile-container {
@@ -159,6 +163,44 @@
             font-size: 24px;
             cursor: pointer;
         }
+        .reviews-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #f0f5f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .review-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .review-profile-picture {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background-color: #80a4c2; /* You can replace this with an actual image URL */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .review-text {
+            flex: 1;
+        }
+        @media (min-width: 768px) {
+            .profile-container {
+                flex-direction: row;
+            }
+
+            .reviews-container {
+                flex: 1;
+                /* margin-left: 20px; */
+            }
+        }
     </style>
 </head>
 <body>
@@ -239,6 +281,23 @@
             {% endif %}
         </div>
     </div>
+    <div class="reviews-container">
+        <h2>Reviews</h2>
+        {% if received_reviews %}
+            <ul>
+                {% for review in received_reviews %}
+                    <li class="review-card">
+                        <div class="review-profile-picture" style="background-image: url('{{ review.sender.profile_picture.url }}');"></div>
+                        <div class="review-text">
+                            <p>{{ review.sender.username }}: {{ review.text }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No reviews yet.</p>
+        {% endif %}
+    </div>
 
     <footer>
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
@@ -286,7 +345,3 @@
     </script>
 </body>
 </html>
-            
-        
-
-

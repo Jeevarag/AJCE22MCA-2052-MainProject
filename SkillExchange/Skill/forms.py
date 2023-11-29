@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 from .models import CustomUser
 from .models import UserSkill
 from .models import UserLocation
+from .models import Review
 
 
 class UserLocationForm(forms.ModelForm):
@@ -31,4 +32,9 @@ class UserSearchForm(forms.Form):
 class SkillSessionForm(forms.Form):
     date_and_time = forms.DateTimeField(label='Date and Time', input_formats=['%Y-%m-%dT%H:%M'], widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
     duration_minutes = forms.IntegerField(label='Duration (minutes)')
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['text']
 

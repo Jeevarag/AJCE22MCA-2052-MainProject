@@ -27,6 +27,7 @@ urlpatterns = [
     path('reject-skill-request/<int:request_id>/', views.reject_skill_request, name='reject_skill_request'),
     path('sent-skill-requests/', views.sent_skill_requests, name='sent_skill_requests'),
     path('manage-session/<int:session_id>/', views.manage_session, name='manage_session'),
+     path('create_review/<int:session_id>/', views.create_review, name='create_review'),
 #     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
     path('admin_index/', views.admin_index, name='admin_index'),
     path('activate_user/<int:user_id>/', views.activate_user, name='activate_user'),

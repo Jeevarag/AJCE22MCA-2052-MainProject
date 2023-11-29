@@ -126,6 +126,8 @@
                             <td>
                                 {% if session.status == 'scheduled' %}
                                     <a href="{% url 'manage_session' session_id=session.id %}" class="btn btn-primary">Manage Session</a>
+                                {% elif session.status == 'completed' %}
+                                    <a href="{% url 'create_review' session_id=session.id %}" class="btn btn-success">Post Review</a>
                                 {% endif %}
                             </td>
                             <td>{{ session.status }}</td>
