@@ -94,30 +94,36 @@ def follow_user(request):
         condition = request.GET['nf']
         other_UserID = request.GET['id']
         otherF = CustomUser.objects.get(id=other_UserID)
-        foll = Follower(follower=request.user,
-                        following=otherF, is_following=True)
+        foll = Follower(follower=request.user, following=otherF, is_following=True)
         foll.save()
-        return redirect('profile')
     elif 'f' in request.GET:
         condition = request.GET['f']
         other_UserID = request.GET['id']
         otherF = CustomUser.objects.get(id=other_UserID)
-        foll = Follower.objects.get(
-            Q(follower=request.user) & Q(following=other_UserID))
-        foll.is_following = True
-        foll.save()
-        return redirect('profile')
+        foll, created = Follower.objects.get_or_create(
+            follower=request.user,
+            following=otherF,
+            defaults={'is_following': True}
+        )
+        if not created:
+            foll.is_following = True
+            foll.save()
     else:
         condition = request.GET['uf']
         other_UserID = request.GET['id']
         otherF = CustomUser.objects.get(id=other_UserID)
-        try:
-            foll = Follower.objects.get(
-                follower=request.user, following=otherF, is_following=False)
-            foll.delete()
-        except Follower.DoesNotExist:
-            pass
-        return redirect('profile')
+        foll = get_object_or_404(Follower, follower=request.user, following=otherF, is_following=True)
+        foll.is_following = False
+        foll.save()
+
+    # Update the 'follow' variable
+    data = {
+        'user': otherF,
+        'user_skills': otherF.skills.all(),
+        'follow': Follower.objects.filter(Q(follower=request.user) & Q(following=otherF)).first()
+    }
+
+    return render(request, 'profile.html', data)
 
 
 @login_required(login_url='login')

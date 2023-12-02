@@ -20,7 +20,7 @@ class CustomUser(AbstractUser):
 
 
     def following_count(self):
-        return self.following.count() 
+        return Follower.objects.filter(follower=self, is_following=True).count() 
 
 
 class UserLocation(models.Model):
