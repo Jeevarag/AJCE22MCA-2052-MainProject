@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>Pay Skill Points</title>
+    </head>
+    <body>
+        <h2>Pay Skill Points</h2>
+
+        <p>Requested Skill Points: {{ skill_request.points_requested }}</p>
+
+        <form method="post" action="{% url 'accept_skillpoints' %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+        </form>
+        <form method="post" action="">
+            {% csrf_token %}
+            <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+        </form>
+    </body>
+</html>

@@ -4,6 +4,7 @@ from .models import CustomUser
 from .models import UserSkill
 from .models import UserLocation
 from .models import Review
+from .models import SkillPointRequest
 
 
 class UserLocationForm(forms.ModelForm):
@@ -38,3 +39,8 @@ class ReviewForm(forms.ModelForm):
         model = Review
         fields = ['text']
 
+
+class SkillPointRequestForm(forms.ModelForm):
+    class Meta:
+        model = SkillPointRequest
+        fields = ['points_requested']

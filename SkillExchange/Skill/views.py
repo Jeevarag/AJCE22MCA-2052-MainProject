@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import requests
+from django.http import Http404
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm,SkillPointRequestForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -23,6 +24,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from .skills import SKILLS
 from django.utils import timezone
 from datetime import timedelta
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -329,8 +336,6 @@ def accept_skill_request(request, request_id):
         # Redirect to a form for scheduling the session
         return redirect('schedule_session', request_id=skill_request.id)
 
-    # return render(request, 'accept_skill_request.html', {'skill_request': skill_request})
-
 
 def reject_skill_request(request, request_id):
     if request.method == 'POST':
@@ -340,6 +345,79 @@ def reject_skill_request(request, request_id):
         skill_request.save()
         # Redirect to a success page or user profile
         return redirect('profile', username=request.user.username)
+
+
+def request_skill_points(request, receiver_id):
+    receiver = get_object_or_404(CustomUser, id=receiver_id)
+    skill_request = SkillRequest.objects.filter(
+        sender=request.user, status='pending').first()
+    if request.method == 'POST':
+        form = SkillPointRequestForm(request.POST)
+        if form.is_valid():
+            points_requested = form.cleaned_data['points_requested']
+
+            # Create a skill point request
+            SkillPointRequest.objects.create(
+                sender=request.user,
+                receiver=receiver,
+                skill_request=skill_request,
+                points_requested=points_requested 
+            )
+
+            return redirect('profile')
+
+    else:
+        form = SkillPointRequestForm()
+
+    return render(request, 'request_skill_points.html', {'form': form, 'receiver': receiver})
+
+def skillpoint_request(request):
+    received_requests = SkillPointRequest.objects.filter(receiver=request.user, status='pending')
+    print("Received Requests:", received_requests)
+    return render(request, 'skillpoint_request.html', {'received_requests': received_requests})
+
+def accept_skillpoint_request(request, request_id):
+    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user)
+    
+    if request.method == 'POST':
+        if skill_point_request.status == 'pending':
+            # Deduct points from sender and add points to the receiver
+            sender_skill_points = SkillPoints.objects.get(user=skill_point_request.sender)
+            receiver_skill_points = SkillPoints.objects.get(user=request.user)
+
+            if sender_skill_points.available_points >= skill_point_request.points_requested:
+                sender_skill_points.available_points -= skill_point_request.points_requested
+                sender_skill_points.spent_points += skill_point_request.points_requested
+                sender_skill_points.save()
+
+                receiver_skill_points.available_points += skill_point_request.points_requested
+                receiver_skill_points.received_points += skill_point_request.points_requested
+                receiver_skill_points.save()
+
+                skill_point_request.status = 'accepted'
+                skill_point_request.save()
+
+                # Update the corresponding skill request status
+                skill_request = skill_point_request.skill_request
+                if skill_request and skill_request.status == 'pending':
+                    skill_request.status = 'accepted'
+                    skill_request.save()
+
+    return redirect('skillpoint_request_status')
+
+def reject_skillpoint_request(request, request_id):
+    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user)
+
+    if request.method == 'POST':
+        if skill_point_request.status == 'pending':
+            skill_point_request.status = 'rejected'
+            skill_point_request.save()
+
+    return redirect('profile')
+
+def skillpoint_request_status(request):
+    sent_requests = SkillPointRequest.objects.filter(sender=request.user)
+    return render(request, 'skillpoint_request_status.html', {'sent_requests': sent_requests})
 
 
 def skill_requests(request):
@@ -379,6 +457,33 @@ def schedule_session(request, request_id):
         form = SkillSessionForm()
 
     return render(request, 'schedule_session.html', {'form': form, 'skill_request': skill_request})
+
+
+def schedule_session_skillpoint(request, request_id):
+    print(f"DEBUG: Received request_id: {request_id}")
+    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user, status='accepted')
+    print(f"DEBUG: SkillPointRequest Status: {skill_point_request.status}")
+
+    if request.method == 'POST':
+        form = SkillSessionForm(request.POST)
+        if form.is_valid():
+            date_and_time = form.cleaned_data['date_and_time']
+            duration_minutes = form.cleaned_data['duration_minutes']
+
+            # Create a session for the accepted skill point request
+            SkillSession.objects.create(
+                skill_request=skill_point_request.skill_request,
+                date_and_time=date_and_time,
+                duration_minutes=duration_minutes,
+                status='scheduled'
+            )
+
+            messages.success(request, 'Skill session scheduled successfully!')
+            return redirect('profile', username=request.user.username)
+    else:
+        form = SkillSessionForm()
+
+    return render(request, 'schedule_session.html', {'form': form, 'skill_request': skill_point_request.skill_request})
 
 
 def manage_session(request, session_id):
@@ -488,3 +593,98 @@ def create_review(request, session_id):
     return render(request, 'create_review.html', {'form': form, 'skill_session': skill_session})
 
 
+def buy_skill_points(request):
+
+    return render(request, "buy_points.html",)
+
+@csrf_exempt
+def purchase_skillpoints(request):
+    logger.info("Purchase Skill Points view called")
+    if request.method == 'POST':
+        # Get the selected plan value from the form
+        selected_plan = request.POST.get('selected_plan', '')
+
+        # Check if the value is non-empty and numeric
+        if selected_plan.isdigit() and int(selected_plan) > 0:
+            points_plan = int(selected_plan)
+
+            # Replace with your actual Razorpay API key and secret
+            razorpay_key_id = "rzp_test_4xk0xz87l8Atss"
+            razorpay_key_secret = "7zBFnTLQvHPXVUseIuZbB1lq"
+
+            client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
+
+            # Create an order on Razorpay
+            order_data = {
+                "amount": points_plan * 100,  # Convert to paise
+                "currency": "INR",
+                "receipt": f"skill_points_receipt_{request.user.id}",
+                "notes": {
+                    "user_id": request.user.id,
+                    "plan": f"{points_plan} Skill Points",
+                }
+            }
+
+            order = client.order.create(data=order_data)
+
+            # Pass order ID and other details to the client-side
+            context = {
+                "razorpay_key_id": razorpay_key_id,
+                "order_id": order['id'],
+                "order_amount": order['amount'],
+            }
+            print("Redirecting to payment view")
+            return redirect('payment_view', order_id=order['id'])
+
+    return render(request, 'buy_points.html')
+
+
+def payment_view(request):
+    # Replace with your actual Razorpay API key and secret
+    razorpay_key_id = "rzp_test_4xk0xz87l8Atss"
+    razorpay_key_secret = "7zBFnTLQvHPXVUseIuZbB1lq"
+
+    client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
+
+    # Handle the Razorpay response and update the necessary data
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        # Extract relevant information from the response
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+
+        # Verify the payment signature using webhook verification
+        try:
+            client.utility.verify_webhook_signature(
+                data=request.body.decode('utf-8'),
+                signature=razorpay_signature,
+                secret=razorpay_key_secret
+            )
+        except Exception as e:
+            # Handle verification failure
+            return JsonResponse({'status': 'error', 'message': 'Webhook verification failed'})
+
+        # Fetch the order details from Razorpay (replace with your actual order ID)
+        order = client.order.fetch(razorpay_order_id)
+
+        # Extract the plan information from the order notes
+        plan_info = order['notes']['plan']
+        points_plan = int(plan_info.split()[0])  # Extract the numeric part
+
+        # Update the user's skill points in the SkillPoints model
+        skill_points, created = SkillPoints.objects.get_or_create(user=request.user)
+        skill_points.available_points += points_plan
+        skill_points.save()
+
+        # Create a SkillPointsTransaction entry
+        SkillPointsTransaction.objects.create(
+            sender=request.user,
+            skill_points=points_plan,
+            status='completed',
+        )
+
+        return JsonResponse({'status': 'success', 'message': 'Skill points added successfully'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})

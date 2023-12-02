@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>Skill Points requests</title>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Skill Point Requests</h2>
+            <ul>
+                {% for request in received_requests %}
+                    <li>
+                        Request from {{ request.sender.username }} for {{ request.points_requested }} points
+                        <form method="post" action="{% url 'accept_skillpoint_request' request.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-accept">Accept</button>
+                        </form>
+                        <form method="post" action="{% url 'reject_skillpoint_request' request.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-reject">Reject</button>
+                        </form>
+                    </li>
+                {% empty %}
+                    <p>No skill point requests.</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>

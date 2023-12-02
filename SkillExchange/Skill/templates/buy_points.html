@@ -1,0 +1,72 @@
+<html>
+<head>
+    <title>Purchase Skill Points</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h2>Select a Skill Points Plan</h2>
+
+    <form id="paymentForm">
+        {% csrf_token %}
+
+        <label>
+            <input type="radio" name="points_plan" value="100" checked>
+            100 Skill Points for 100 Rupees
+        </label><br>
+
+        <label>
+            <input type="radio" name="points_plan" value="300">
+            300 Skill Points for 300 Rupees
+        </label><br>
+
+        <label>
+            <input type="radio" name="points_plan" value="500">
+            500 Skill Points for 500 Rupees
+        </label><br>
+
+        <!-- Add a hidden input field to store the selected plan -->
+        <input type="hidden" name="selected_plan" id="selectedPlan" value="">
+
+        <!-- Razorpay button -->
+        <button type="button" onclick="initializeRazorpay()">Buy Skill Points</button>
+
+        <script>
+            function initializeRazorpay() {
+                // Get the selected plan
+                var selectedPlan = document.querySelector('input[name="points_plan"]:checked').value;
+
+                // Set the selected plan in the hidden input field
+                document.getElementById('selectedPlan').value = selectedPlan;
+
+                // Call the Razorpay checkout function
+                startPayment();
+            }
+
+            function startPayment() {
+                var options = {
+                    key: "rzp_test_4xk0xz87l8Atss",  // Replace with your actual Razorpay API key
+                    amount: document.getElementById('selectedPlan').value * 100,  // Convert to paise
+                    currency: "INR",
+                    name: "SkillSwap",
+                    description: "Payment for Skill Points",
+                    handler: function(response) {
+                        // Handle the Razorpay response, usually send it to the server for verification
+                        // This could involve making an AJAX request to your server
+                        console.log(response);
+
+                        // Perform client-side redirection
+                        
+                    },
+                    prefill: {
+                        name: "Admin_SkillSwap",
+                        email: "admin@example.com",
+                    }
+                };
+
+                var rzp1 = new Razorpay(options);
+                rzp1.open();
+            }
+        </script>
+    </form>
+</body>
+</html>

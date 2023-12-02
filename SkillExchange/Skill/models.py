@@ -88,4 +88,42 @@ class Review(models.Model):
     def __str__(self):
         return f'Review from {self.sender} to {self.receiver}'
 
+class SkillPoints(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='skill_points')
+    available_points = models.IntegerField(default=0)
+    spent_points = models.IntegerField(default=0)
+    received_points = models.IntegerField(default=0)
 
+    def __str__(self):
+        return f"SkillPoints for {self.user.username}"
+
+class SkillPointsTransaction(models.Model):
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_transactions')
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_transactions')
+    skill_points = models.IntegerField()
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')], default='pending')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username} sent {self.skill_points} skill points to {self.receiver.username} on {self.timestamp}"
+
+class SkillPointsTransactionHistory(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='transaction_history')
+    skill_points = models.IntegerField()
+    amount_paid = models.FloatField()
+    purchase_time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Transaction for {self.skill_points} skill points by {self.user.username} at {self.purchase_time}"
+
+
+class SkillPointRequest(models.Model):
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_skill_point_requests')
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_skill_point_requests')
+    points_requested = models.IntegerField()
+    skill_request = models.ForeignKey(SkillRequest, on_delete=models.CASCADE, related_name='skill_point_requests')
+    status_choices = [('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')]
+    status = models.CharField(max_length=10, choices=status_choices, default='pending')
+
+    def __str__(self):
+        return f"SkillPointRequest from {self.sender.username} to {self.receiver.username} ({self.get_status_display()})"

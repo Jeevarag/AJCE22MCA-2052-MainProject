@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Request Skill Points</title>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Request Skill Points</h2>
+            <p>Request skill points from {{ receiver.username }}:</p>
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Submit Request</button>
+            </form>
+        </div>
+    </body>
+</html>

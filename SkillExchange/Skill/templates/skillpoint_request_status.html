@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>
+            Skill points status
+        </title>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Skill Point Request Status</h2>
+            <ul>
+                {% for request in sent_requests %}
+                    <li>
+                        Request from {{ request.sender.username }} for {{ request.points_requested }} points
+                        Status: {{ request.get_status_display }}
+                        <form method="post" action="{% url 'schedule_session_skillpoint' request_id=request.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Schedule a Session</button>
+                        </form>
+                    </li>
+                {% empty %}
+                    <p>No pending skill point requests.</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>

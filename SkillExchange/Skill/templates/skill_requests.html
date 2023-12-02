@@ -118,6 +118,7 @@
                             <th>Message</th>
                             <th>Accept</th>
                             <th>Reject</th>
+                            <th>Skill Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,6 +136,12 @@
                                     <form method="post" action="{% url 'reject_skill_request' request.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-reject">Reject</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="post" action="{% url 'request_skill_points' receiver_id=request.sender.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary">Request Skill Points</button>
                                     </form>
                                 </td>
                             </tr>
