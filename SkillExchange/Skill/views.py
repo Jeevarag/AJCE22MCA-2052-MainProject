@@ -6,7 +6,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm,SkillPointRequestForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -28,6 +28,7 @@ import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
+from django.views.decorators.cache import never_cache
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ def index(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def home(request):
     return render(request, 'home.html')
 
@@ -94,7 +96,8 @@ def follow_user(request):
         condition = request.GET['nf']
         other_UserID = request.GET['id']
         otherF = CustomUser.objects.get(id=other_UserID)
-        foll = Follower(follower=request.user, following=otherF, is_following=True)
+        foll = Follower(follower=request.user,
+                        following=otherF, is_following=True)
         foll.save()
     elif 'f' in request.GET:
         condition = request.GET['f']
@@ -112,7 +115,8 @@ def follow_user(request):
         condition = request.GET['uf']
         other_UserID = request.GET['id']
         otherF = CustomUser.objects.get(id=other_UserID)
-        foll = get_object_or_404(Follower, follower=request.user, following=otherF, is_following=True)
+        foll = get_object_or_404(
+            Follower, follower=request.user, following=otherF, is_following=True)
         foll.is_following = False
         foll.save()
 
@@ -127,6 +131,7 @@ def follow_user(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def edit_profile(request):
     if request.method == 'POST':
         if not UserLocation.objects.filter(user=request.user.id).exists():
@@ -159,6 +164,7 @@ def edit_profile(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def view_profile(request):
     user_profile = CustomUser.objects.get(id=request.user.id)
     received_reviews = user_profile.received_reviews.all()
@@ -186,6 +192,7 @@ def view_profile(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def view_other_user_profile(request, username):
     user_profile = CustomUser.objects.get(username=username)
     user_skills = user_profile.skills.all()
@@ -209,6 +216,7 @@ def user_logout(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def admin_index(request):
     all_users = CustomUser.objects.exclude(
         is_superuser='1')  # Exclude superusers
@@ -221,6 +229,7 @@ def admin_index(request):
 
 
 @login_required(login_url='login')
+@never_cache
 def add_skill(request):
     if request.method == 'POST':
         skill_form = SkillForm(request.POST)
@@ -355,8 +364,15 @@ def reject_skill_request(request, request_id):
 
 def request_skill_points(request, receiver_id):
     receiver = get_object_or_404(CustomUser, id=receiver_id)
+
+    # Filter SkillRequest objects where the current user is the sender and status is 'pending'
     skill_request = SkillRequest.objects.filter(
-        sender=request.user, status='pending').first()
+        receiver=request.user, status='pending').first()
+
+    if not skill_request:
+        # Raise an Http404 error or redirect to an appropriate page
+        HttpResponse("No pending SkillRequest found for the current user.")
+
     if request.method == 'POST':
         form = SkillPointRequestForm(request.POST)
         if form.is_valid():
@@ -377,18 +393,24 @@ def request_skill_points(request, receiver_id):
 
     return render(request, 'request_skill_points.html', {'form': form, 'receiver': receiver})
 
+
+
 def skillpoint_request(request):
-    received_requests = SkillPointRequest.objects.filter(receiver=request.user, status='pending')
+    received_requests = SkillPointRequest.objects.filter(
+        receiver=request.user, status='pending')
     print("Received Requests:", received_requests)
     return render(request, 'skillpoint_request.html', {'received_requests': received_requests})
 
+
 def accept_skillpoint_request(request, request_id):
-    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user)
-    
+    skill_point_request = get_object_or_404(
+        SkillPointRequest, id=request_id, receiver=request.user)
+
     if request.method == 'POST':
         if skill_point_request.status == 'pending':
             # Deduct points from sender and add points to the receiver
-            sender_skill_points = SkillPoints.objects.get(user=skill_point_request.sender)
+            sender_skill_points = SkillPoints.objects.get(
+                user=skill_point_request.sender)
             receiver_skill_points = SkillPoints.objects.get(user=request.user)
 
             if sender_skill_points.available_points >= skill_point_request.points_requested:
@@ -411,8 +433,10 @@ def accept_skillpoint_request(request, request_id):
 
     return redirect('skillpoint_request_status')
 
+
 def reject_skillpoint_request(request, request_id):
-    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user)
+    skill_point_request = get_object_or_404(
+        SkillPointRequest, id=request_id, receiver=request.user)
 
     if request.method == 'POST':
         if skill_point_request.status == 'pending':
@@ -420,6 +444,7 @@ def reject_skillpoint_request(request, request_id):
             skill_point_request.save()
 
     return redirect('profile')
+
 
 def skillpoint_request_status(request):
     sent_requests = SkillPointRequest.objects.filter(sender=request.user)
@@ -435,7 +460,6 @@ def skill_requests(request):
 def sent_skill_requests(request):
     # Fetch the skill requests sent by the current user
     sent_requests = SkillRequest.objects.filter(sender=request.user)
-
     return render(request, 'sent_skill_requests.html', {'sent_requests': sent_requests})
 
 
@@ -466,9 +490,8 @@ def schedule_session(request, request_id):
 
 
 def schedule_session_skillpoint(request, request_id):
-    print(f"DEBUG: Received request_id: {request_id}")
-    skill_point_request = get_object_or_404(SkillPointRequest, id=request_id, receiver=request.user, status='accepted')
-    print(f"DEBUG: SkillPointRequest Status: {skill_point_request.status}")
+    skill_point_request = get_object_or_404(
+        SkillPointRequest, id=request_id, sender=request.user, status='accepted')
 
     if request.method == 'POST':
         form = SkillSessionForm(request.POST)
@@ -599,98 +622,40 @@ def create_review(request, session_id):
     return render(request, 'create_review.html', {'form': form, 'skill_session': skill_session})
 
 
-def buy_skill_points(request):
-
-    return render(request, "buy_points.html",)
-
-@csrf_exempt
-def purchase_skillpoints(request):
-    logger.info("Purchase Skill Points view called")
-    if request.method == 'POST':
-        # Get the selected plan value from the form
-        selected_plan = request.POST.get('selected_plan', '')
-
-        # Check if the value is non-empty and numeric
-        if selected_plan.isdigit() and int(selected_plan) > 0:
-            points_plan = int(selected_plan)
-
-            # Replace with your actual Razorpay API key and secret
-            razorpay_key_id = "rzp_test_4xk0xz87l8Atss"
-            razorpay_key_secret = "7zBFnTLQvHPXVUseIuZbB1lq"
-
-            client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
-
-            # Create an order on Razorpay
-            order_data = {
-                "amount": points_plan * 100,  # Convert to paise
-                "currency": "INR",
-                "receipt": f"skill_points_receipt_{request.user.id}",
-                "notes": {
-                    "user_id": request.user.id,
-                    "plan": f"{points_plan} Skill Points",
-                }
-            }
-
-            order = client.order.create(data=order_data)
-
-            # Pass order ID and other details to the client-side
-            context = {
-                "razorpay_key_id": razorpay_key_id,
-                "order_id": order['id'],
-                "order_amount": order['amount'],
-            }
-            print("Redirecting to payment view")
-            return redirect('payment_view', order_id=order['id'])
-
+def buy_skillpoints(request):
     return render(request, 'buy_points.html')
 
 
-def payment_view(request):
-    # Replace with your actual Razorpay API key and secret
-    razorpay_key_id = "rzp_test_4xk0xz87l8Atss"
-    razorpay_key_secret = "7zBFnTLQvHPXVUseIuZbB1lq"
+def pay_razor(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        amount = 30000  # Assuming you are buying 300 Skill Points
 
-    client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
+        client = razorpay.Client(
+            auth=("rzp_test_4xk0xz87l8Atss", "7zBFnTLQvHPXVUseIuZbB1lq"))
 
-    # Handle the Razorpay response and update the necessary data
-    if request.method == 'POST':
-        data = json.loads(request.body)
+        payment = client.order.create({'amount': amount, 'currency': 'INR',
+                                       'payment_capture': '1'})
 
-        # Extract relevant information from the response
-        razorpay_order_id = data.get('razorpay_order_id')
-        razorpay_payment_id = data.get('razorpay_payment_id')
-        razorpay_signature = data.get('razorpay_signature')
-
-        # Verify the payment signature using webhook verification
-        try:
-            client.utility.verify_webhook_signature(
-                data=request.body.decode('utf-8'),
-                signature=razorpay_signature,
-                secret=razorpay_key_secret
-            )
-        except Exception as e:
-            # Handle verification failure
-            return JsonResponse({'status': 'error', 'message': 'Webhook verification failed'})
-
-        # Fetch the order details from Razorpay (replace with your actual order ID)
-        order = client.order.fetch(razorpay_order_id)
-
-        # Extract the plan information from the order notes
-        plan_info = order['notes']['plan']
-        points_plan = int(plan_info.split()[0])  # Extract the numeric part
-
-        # Update the user's skill points in the SkillPoints model
-        skill_points, created = SkillPoints.objects.get_or_create(user=request.user)
-        skill_points.available_points += points_plan
-        skill_points.save()
-
-        # Create a SkillPointsTransaction entry
-        SkillPointsTransaction.objects.create(
-            sender=request.user,
-            skill_points=points_plan,
-            status='completed',
+        # Update SkillPointsTransactionHistory model
+        transaction = SkillPointsTransactionHistory.objects.create(
+            user=request.user,
+            skill_points=300,  # Update based on your logic
+            amount_paid=amount / 100.0,  # Convert amount to rupees
+            purchase_time=timezone.now()
         )
 
-        return JsonResponse({'status': 'success', 'message': 'Skill points added successfully'})
+        # Update SkillPoints model
+        skill_points_user, created = SkillPoints.objects.get_or_create(
+            user=request.user)
+        skill_points_user.available_points += 300  # Update based on your logic
+        skill_points_user.save()
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+        return render(request, 'success.html', {'transaction': transaction})
+
+    return render(request, 'pay_razor.html')
+
+
+@csrf_exempt
+def success(request):
+    return render(request, "success.html")

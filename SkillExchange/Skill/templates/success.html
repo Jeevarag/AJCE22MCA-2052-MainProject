@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head>
+    <style>
+        .center {
+            position: absolute;
+            text-align: center;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center">
+        <h3>
+            Transaction Completed! <i class="fas fa-check-circle"></i>
+        </h3>
+        <p>{{ transaction.skill_points }} Skill Points added to your account.</p>
+        <h5>
+            <a href="{% url 'home' %}">
+                Learn new Skills!!
+            </a>
+        </h5>
+    </div> 
+</body>
+
+{% endblock content %}

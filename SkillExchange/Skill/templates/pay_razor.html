@@ -1,11 +1,13 @@
-{% load static %}
+{% extends 'base.html' %}
 
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Skill Points</title>
+    <title>Buy Skill Points</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- Add Bootstrap CSS link here if not already included -->
@@ -16,7 +18,6 @@
             margin: 0;
             padding: 0;
             position: relative;
-            padding-bottom: 50px; /* Adjust as needed to avoid overlap with fixed footer */
             min-height: 100vh;
         }
 
@@ -61,31 +62,28 @@
             padding: 10px 0;
         }
 
-        .action-container {
-            background-size: cover;
-            background-image: url("{% static 'Images/skillpoint.jpg' %}");
+        .center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            padding: 50px 0;
-            color: #5c5c5c;
-            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            margin-bottom: 50px;
-            margin-left: 470px;
-            margin-right: 40px;
-            margin-top: 40px;
-            border-radius: 20px;
-            min-height: 500px;
-            width: 700px;
-            display: inline-block;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
-        .action-container:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        .center h3 {
+            margin-bottom: 20px;
+        }
+
+        .center form {
+            display: inline-block;
         }
     </style>
 </head>
+
 <body>
     <header>
         <nav>
@@ -102,10 +100,24 @@
         </div>
     </header>
 
-        <a href="{% url 'pay_razor' %}" class="action-container" data-skill-points="300"><span>300 Skill Points</span></a>
+    <div class="center">
+        <h3>You are about to buy 300 Skill Points</h3>
+        <form action="{% url 'success' %}" method="POST">
+            {% csrf_token %}
+            <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_test_4xk0xz87l8Atss"
+                data-amount="30000" data-currency="INR" data-order_id="{{payment.id}}"
+                data-buttontext="Pay with Razorpay" data-name="Skill Swap"
+                data-description="Thank you for growing with Skill Swap" data-image="https://example.com/your_logo.jpg"
+                data-prefill.name="Admin SkillSwap" data-prefill.email="admin@skillswap.com"
+                data-theme.color="#F37254"></script>
+            <input type="hidden" custom="Hidden Element" name="hidden" />
+        </form>
+    </div>
 
     <footer>
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
 </body>
+
 </html>
+{% endblock %}

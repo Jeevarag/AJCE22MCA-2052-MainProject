@@ -210,32 +210,18 @@
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'about_us' %}">About</a></li>
-                <li><a href="{% url 'profile' %}">My profile</a></li>
+                <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
                 <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
         </nav>
-        <!-- <div class="notification">
-            <div class="notification-button-container">
-                <a href="" class="btn btn-primary" id="notification-button" data-open="false">
-                    <i id="notification-icon" class="fas fa-bell"></i>Notifications
-                </a>
-                <div class="notification-dropdown notification-slide-in">
-                     Example notification items -->
-                    <!-- {% for notification in skill_request_notifications %} -->
-                        <!-- <div class="notification-item">{{ notification }}</div> -->
-                    <!-- {% endfor %} -->
-                    <!-- Add more notification items as needed -->
-                <!-- </div>
-            </div>
-        </div> --> 
         <div class="search-bar">
             <form action="{% url 'search_users' %}" method="GET">
-                {{ form.as_p }}
+                <input type="text" name="query" placeholder="Search users..." id="search_user">
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
         </div>
         <div class="user-info">
-            <a href="{% url 'buy_points' %}">Buy SkillPoints</a>
+            <a href="{% url 'buy_skillpoints' %}">Buy SkillPoints</a>
             {% if user.profile_picture %}
                     <div class="profile-picture" style="background-image: url('{{ user.profile_picture.url }}'); width:40px; height:40px; border-radius: 50%; background-size: cover;"></div>
                 {% else %}
@@ -250,7 +236,7 @@
         <div class="hero-content">
             <h1>Welcome to SkillSwap</h1>
             <div class="action-containers">
-                <a href="{% url 'learn' %}" class="action-container learn-container">
+                <a id="teach" href="{% url 'learn' %}" class="action-container learn-container">
                     <span>Learn</span>
                 </a>
                 <a href="{% url 'teach' %}" class="action-container teach-container">

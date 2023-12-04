@@ -15,23 +15,25 @@
     <!-- Display order details and initiate Razorpay checkout on page load -->
     <script>
         var options = {
-            key: "{{ razorpay_key_id }}",
-            amount: "{{ order_amount }}",
-            currency: "INR",
-            name: "SkillSwap",
-            description: "Payment for Skill Points",
-            order_id: "{{ order_id }}",
-            handler: function(response) {
-                // Handle the Razorpay response, usually send it to the server for verification
-                // This could involve making an AJAX request to your server
-                console.log(response);
-            },
-            prefill: {
-                name: "Admin_SkillSwap",
-                email: "jeevan2016smr@gmail.com",
-                contact: "+918606279719"
-            }
-        };
+        key: "rzp_test_4xk0xz87l8Atss",
+        amount: "{{ points_plan|default:0 }}00",  <!-- Multiply points_plan by 100 in the template -->
+        currency: "INR",
+        name: "Acme Corp",
+        description: "Payment for Skill Points",
+        order_id: "{{ order_id }}",
+        handler: function(response) {
+            // Handle the Razorpay response, usually send it to the server for verification
+            // This could involve making an AJAX request to your server
+            console.log(response);
+
+            // Perform client-side redirection
+            window.location.href = "/payment_view/";
+        },
+        prefill: {
+            name: "Gaurav Kumar",
+            email: "gaurav.kumar@example.com",
+        }
+    };
 
         var rzp1 = new Razorpay(options);
         rzp1.open();
