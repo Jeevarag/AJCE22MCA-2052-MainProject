@@ -227,7 +227,7 @@
                 {% else %}
                     <div class="profile-picture" style="background-image: url('/static/Images/profile.jpg'); width:40px; height:40px; border-radius: 50%; background-size: cover;"></div>
                 {% endif %}
-            <p>Hello, {{ user.username }}!</p>
+            <p>{{ user.username }}</p>
             <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
         </div>
     </header>

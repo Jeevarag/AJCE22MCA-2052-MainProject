@@ -127,6 +127,7 @@ class SkillPointsTransaction(models.Model):
         'pending', 'Pending'), ('completed', 'Completed')], default='pending')
     timestamp = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self):
         return f"{self.sender.username} sent {self.skill_points} skill points to {self.receiver.username} on {self.timestamp}"
 
@@ -137,6 +138,8 @@ class SkillPointsTransactionHistory(models.Model):
     skill_points = models.IntegerField()
     amount_paid = models.FloatField()
     purchase_time = models.DateTimeField(default=timezone.now)
+    transaction_id = models.CharField(max_length=255, default='')  # Add this field for Razorpay transaction ID
+    status = models.CharField(max_length=50, default='pending')
 
     def __str__(self):
         return f"Transaction for {self.skill_points} skill points by {self.user.username} at {self.purchase_time}"

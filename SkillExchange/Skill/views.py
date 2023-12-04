@@ -629,29 +629,43 @@ def buy_skillpoints(request):
 def pay_razor(request):
     if request.method == "POST":
         name = request.POST.get('name')
-        amount = 30000  # Assuming you are buying 300 Skill Points
 
-        client = razorpay.Client(
-            auth=("rzp_test_4xk0xz87l8Atss", "7zBFnTLQvHPXVUseIuZbB1lq"))
+        client = razorpay.Client(auth=("rzp_test_4xk0xz87l8Atss", "7zBFnTLQvHPXVUseIuZbB1lq"))
 
-        payment = client.order.create({'amount': amount, 'currency': 'INR',
-                                       'payment_capture': '1'})
+        payment = client.order.create({
+            'amount': 30000, 
+            'currency': 'INR',
+            "receipt": "receipt#1",
+            'payment_capture': '1'})
+
+        client = razorpay.Client(auth=("YOUR_ID", "YOUR_SECRET"))
+
+        DATA = {
+            "amount": 100,
+            "currency": "INR",
+            "receipt": "receipt#1",
+            "notes": {
+                "key1": "value3",
+                "key2": "value2"
+            }
+        }
+        client.order.create(data=DATA)
 
         # Update SkillPointsTransactionHistory model
         transaction = SkillPointsTransactionHistory.objects.create(
             user=request.user,
             skill_points=300,  # Update based on your logic
             amount_paid=amount / 100.0,  # Convert amount to rupees
-            purchase_time=timezone.now()
+            purchase_time=timezone.now(),
+            transaction_id=payment.get('id'),
+            status=payment.get('status')
         )
 
         # Update SkillPoints model
-        skill_points_user, created = SkillPoints.objects.get_or_create(
-            user=request.user)
-        skill_points_user.available_points += 300  # Update based on your logic
-        skill_points_user.save()
+        skill_points, created = SkillPoints.objects.get_or_create(user=request.user)
+        skill_points.available_points += 300  # Update based on your logic
+        skill_points.save()
 
-        return render(request, 'success.html', {'transaction': transaction})
 
     return render(request, 'pay_razor.html')
 

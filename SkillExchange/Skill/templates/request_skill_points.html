@@ -1,16 +1,140 @@
-<html>
-    <head>
-        <title>Request Skill Points</title>
-    </head>
-    <body>
-        <div class="container">
-            <h2>Request Skill Points</h2>
-            <p>Request skill points from {{ receiver.username }}:</p>
-            <form method="post" class="mt-4">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-success">Submit Request</button>
-            </form>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Skill Points</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Add Bootstrap CSS link here if not already included -->
+    <style>
+        body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #dbe9f6;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        min-height: 100vh;
+    }
+
+    header {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+    }
+
+    nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+    }
+
+
+        nav a {
+        text-decoration: none;
+        color: #5c5c5c;
+        margin: 0 20px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-info p {
+        margin-right: 10px;
+    }
+
+    footer {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .container {
+        text-align: center;
+        padding: 50px 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        margin: 50px auto;
+        width: 400px;
+    }
+
+
+        .container h2 {
+        color: #5c5c5c;
+        margin-bottom: 20px;
+    }
+
+    .container p {
+        color: #5c5c5c;
+        margin-bottom: 20px;
+    }
+
+    .container form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .container button {
+        background-color: #80a4c2;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .container button:hover {
+        background-color: #658da9;
+    }
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about_us' %}">About</a></li>
+                <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <p>Hello, {{ user.username }}!</p>
+            <button class="btn btn-primary"><a href="{% url 'logout' %}" id="logout-link">Logout</a></button>
         </div>
-    </body>
+    </header>
+
+    <div class="container">
+        <h2>Request Skill Points</h2>
+        <p>Request skill points from {{ receiver.username }}:</p>
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Submit Request</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+</body>
+
 </html>
