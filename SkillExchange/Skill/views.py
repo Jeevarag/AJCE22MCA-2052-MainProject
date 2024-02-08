@@ -267,15 +267,15 @@ def deactivate_user(request, user_id):
         user.is_active = False
         user.save()
         # Send deactivation email
-        subject = 'Account Deactivation'
-        message = 'Your account has been deactivated by the admin.'
-        from_email = 'jeevaragnp2024b@mca.ajce.in'  # Replace with your email
-        recipient_list = [user.email]
-        html_message = render_to_string(
-            'deactivation_mail.html', {'user': user})
+        # subject = 'Account Deactivation'
+        # message = 'Your account has been deactivated by the admin.'
+        # from_email = 'jeevaragnp2024b@mca.ajce.in'  # Replace with your email
+        # recipient_list = [user.email]
+        # html_message = render_to_string(
+        #     'deactivation_mail.html', {'user': user})
 
-        send_mail(subject, message, from_email,
-                  recipient_list, html_message=html_message)
+        # send_mail(subject, message, from_email,
+        #           recipient_list, html_message=html_message)
 
     else:
         messages.warning(
@@ -288,14 +288,14 @@ def activate_user(request, user_id):
     if not user.is_active:
         user.is_active = True
         user.save()
-        subject = 'Account activated'
-        message = 'Your account has been activated.'
-        from_email = 'jeevaragnp2024b@mca.ajce.in'  # Replace with your email
-        recipient_list = [user.email]
-        html_message = render_to_string('activation_mail.html', {'user': user})
+        # subject = 'Account activated'
+        # message = 'Your account has been activated.'
+        # from_email = 'jeevaragnp2024b@mca.ajce.in'  # Replace with your email
+        # recipient_list = [user.email]
+        # html_message = render_to_string('activation_mail.html', {'user': user})
 
-        send_mail(subject, message, from_email,
-                  recipient_list, html_message=html_message)
+        # send_mail(subject, message, from_email,
+        #           recipient_list, html_message=html_message)
     else:
         messages.warning(request, f"User '{user.username}' is already active.")
     return redirect('admin_index')
@@ -394,7 +394,7 @@ def request_skill_points(request, receiver_id):
     return render(request, 'request_skill_points.html', {'form': form, 'receiver': receiver})
 
 
-
+@never_cache
 def skillpoint_request(request):
     received_requests = SkillPointRequest.objects.filter(
         receiver=request.user, status='pending')
@@ -445,7 +445,7 @@ def reject_skillpoint_request(request, request_id):
 
     return redirect('profile')
 
-
+@never_cache
 def skillpoint_request_status(request):
     sent_requests = SkillPointRequest.objects.filter(sender=request.user)
     return render(request, 'skillpoint_request_status.html', {'sent_requests': sent_requests})
@@ -456,7 +456,7 @@ def skill_requests(request):
         receiver=request.user, status='pending')
     return render(request, 'skill_requests.html', {'pending_requests': pending_requests})
 
-
+@never_cache
 def sent_skill_requests(request):
     # Fetch the skill requests sent by the current user
     sent_requests = SkillRequest.objects.filter(sender=request.user)
@@ -511,6 +511,11 @@ def schedule_session_skillpoint(request, request_id):
             return redirect('profile', username=request.user.username)
     else:
         form = SkillSessionForm()
+
+    # Check if the status is not "accepted"
+    if skill_point_request.status != 'accepted':
+        messages.error(request, 'Skill point request is not accepted.')
+        return redirect('profile')  # Redirect to the profile page
 
     return render(request, 'schedule_session.html', {'form': form, 'skill_request': skill_point_request.skill_request})
 
@@ -638,27 +643,12 @@ def pay_razor(request):
             "receipt": "receipt#1",
             'payment_capture': '1'})
 
-        client = razorpay.Client(auth=("YOUR_ID", "YOUR_SECRET"))
-
-        DATA = {
-            "amount": 100,
-            "currency": "INR",
-            "receipt": "receipt#1",
-            "notes": {
-                "key1": "value3",
-                "key2": "value2"
-            }
-        }
-        client.order.create(data=DATA)
-
         # Update SkillPointsTransactionHistory model
         transaction = SkillPointsTransactionHistory.objects.create(
             user=request.user,
             skill_points=300,  # Update based on your logic
             amount_paid=amount / 100.0,  # Convert amount to rupees
-            purchase_time=timezone.now(),
-            transaction_id=payment.get('id'),
-            status=payment.get('status')
+            purchase_time=timezone.now()
         )
 
         # Update SkillPoints model

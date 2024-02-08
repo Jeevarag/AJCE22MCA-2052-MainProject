@@ -108,6 +108,28 @@
             min-height: 450px; /* Adjust the height as needed */
             width: 300px;
         }
+        .search-form {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style for the search input */
+        .search-input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        /* Style for the search button */
+        .search-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff; /* Use your desired primary color */
+            color: #fff;
+            cursor: pointer;
+        }
 
         .action-container:hover {
             transform: scale(1.1); /* Grow on hover */
@@ -215,9 +237,9 @@
             </ul>
         </nav>
         <div class="search-bar">
-            <form action="{% url 'search_users' %}" method="GET">
-                <input type="text" name="query" placeholder="Search users..." id="search_user">
-                <button type="submit" class="btn btn-primary">Search</button>
+            <form action="{% url 'search_users' %}" method="GET" class="search-form">
+                <input type="text" name="query" placeholder="Search users..." id="search_user" class="search-input">
+                <button type="submit" class="btn btn-primary search-button">Search</button>
             </form>
         </div>
         <div class="user-info">

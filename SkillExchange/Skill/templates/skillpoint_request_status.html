@@ -1,26 +1,146 @@
-<html>
-    <head>
-        <title>
-            Skill points status
-        </title>
-    </head>
-    <body>
-        <div class="container">
-            <h2>Skill Point Request Status</h2>
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Skill Points Status</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            background-image: url("{% static 'Images/skillss.jpg' %}");
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin: 0 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        footer {
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 50px auto;
+            width: 50%;
+        }
+
+        .container h2 {
+            color: #5c5c5c;
+            margin-bottom: 20px;
+        }
+
+        .container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .container li {
+            margin-bottom: 20px;
+        }
+
+        .container form {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
             <ul>
-                {% for request in sent_requests %}
-                    <li>
-                        Request from {{ request.sender.username }} for {{ request.points_requested }} points
-                        Status: {{ request.get_status_display }}
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'profile' %}">My profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Skill Point Request Status</h2>
+        <ul>
+            {% for request in sent_requests %}
+                <li>
+                    Request from {{ request.sender.username }} for {{ request.points_requested }} points
+                    Status: {{ request.get_status_display }}
+                    
+                    {% if request.status == 'accepted' %}
                         <form method="post" action="{% url 'schedule_session_skillpoint' request_id=request.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-primary">Schedule a Session</button>
                         </form>
-                    </li>
-                {% empty %}
-                    <p>No pending skill point requests.</p>
-                {% endfor %}
-            </ul>
-        </div>
-    </body>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <p>No pending skill point requests.</p>
+            {% endfor %}
+        </ul>   
+    </div>
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+</body>
+
 </html>

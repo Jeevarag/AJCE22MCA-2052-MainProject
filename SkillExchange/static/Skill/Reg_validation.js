@@ -14,34 +14,19 @@ document.addEventListener('DOMContentLoaded', function () {
 function validateUsername() {
     const usernameInput = document.getElementById('username');
     const usernameError = document.getElementById('usernameError');
-    const usernameValue = usernameInput.value.trim();
+    const usernameValue = usernameInput.value;
 
-    if (usernameValue === '') {
+    if (usernameValue.trim() === '') {
         usernameError.textContent = 'Username cannot be empty.';
         usernameError.style.color = 'red';
-    } else if (/\s/.test(usernameValue)) {
-        usernameError.textContent = 'Username cannot contain spaces.';
+    } else if (/^\s/.test(usernameValue) || /\s/.test(usernameValue)) {
+        usernameError.textContent = 'Username cannot contain spaces or start with a space.';
         usernameError.style.color = 'red';
     } else if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(usernameValue)) {
         usernameError.textContent = 'Username must start with a letter and contain only letters and numbers.';
         usernameError.style.color = 'red';
     } else {
-    
-        // Send an AJAX request to check if the username is available
-        fetch(`/check_username/?username=${usernameValue}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.exists) {
-                    usernameError.textContent = 'Username is already taken.';
-                    usernameError.style.color = 'red';
-                } else {
-                    usernameError.textContent = '';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle the error here, e.g., show an error message
-            });
+        usernameError.textContent = '';
     }
 }
 
@@ -58,36 +43,46 @@ function validateEmail() {
         emailError.textContent = 'Invalid email format.';
         emailError.style.color = 'red';
     } else {
-        // Send an AJAX request to check if the email is available
-        fetch(`/check_email/?email=${emailValue}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.exists) {
-                    emailError.textContent = 'Email is already registered.';
-                    emailError.style.color = 'red';
-                } else {
-                    emailError.textContent = '';
-                }
-            });
+        emailError.textContent = '';
     }
 }
 
 
 function validatePassword() {
-    const passwordInput = document.getElementById('password');``
+    const passwordInput = document.getElementById('password');
     const passwordError = document.getElementById('passwordError');
     const passwordValue = passwordInput.value.trim();
 
+    let errorMessages = [];
+
     if (passwordValue === '') {
-        passwordError.textContent = 'Password cannot be empty.';
-        passwordError.style.color = 'red'; // Set error text color to red
-    } else if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/.test(passwordValue)) {
-        passwordError.textContent = 'Password must contain at least one number, one lowercase and one uppercase letter, and one special character.';
-        passwordError.style.color = 'red'; // Set error text color to red
+        errorMessages.push('Password cannot be empty.');
+    }
+
+    if (!/(?=.*\d)/.test(passwordValue)) {
+        errorMessages.push('Password must contain at least one number.');
+    }
+
+    if (!/(?=.*[a-z])/.test(passwordValue)) {
+        errorMessages.push('Password must contain at least one lowercase letter.');
+    }
+
+    if (!/(?=.*[A-Z])/.test(passwordValue)) {
+        errorMessages.push('Password must contain at least one uppercase letter.');
+    }
+
+    if (!/(?=.*\W)/.test(passwordValue)) {
+        errorMessages.push('Password must contain at least one special character.');
+    }
+
+    if (errorMessages.length > 0) {
+        passwordError.textContent = errorMessages.join(' '); // Display incorrect error messages
+        passwordError.style.color = 'red';
     } else {
         passwordError.textContent = '';
-    } 
+    }
 }
+
 
 function validateConfirmPassword() {
     const passwordInput = document.getElementById('password');
@@ -104,41 +99,28 @@ function validateConfirmPassword() {
         confirmPasswordError.style.color = 'red'; // Set error text color to red
     } else {
         confirmPasswordError.textContent = '';
-    } 
+    }
 }
 
-function submitForm(e) {
-    // Check if any error messages exist
-    if (
-      usernameError.textContent ||
-      emailError.textContent ||
-      passwordError.textContent ||
-      confirmPasswordError.textContent
-    ) {
-      e.preventDefault(); // Prevent form submission if there are errors
+function validateForm() {
+    // Perform additional form-level validation if needed
+    // Return true to allow form submission, false to prevent it
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const usernameValue = usernameInput.value.trim();
+    const emailValue = emailInput.value.trim();
+    const passwordValue = passwordInput.value.trim();
+    const confirmPasswordValue = confirmPasswordInput.value.trim();
+
+    // Example: Check if any field is empty
+    if (usernameValue === '' || emailValue === '' || passwordValue === '' || confirmPasswordValue === '') {
+        alert('Please fill in all fields.');
+        return false;
     }
-  }
 
-  // Event listener for form submission
-  document.getElementById("registrationForm").addEventListener("submit", submitForm);
-
-// function validateForm() {
-//     const usernameInput = document.getElementById('username');
-//     const emailInput = document.getElementById('email');
-//     const passwordInput = document.getElementById('password');
-//     const confirmPasswordInput = document.getElementById('confirm_password');
-//     const usernameValue = usernameInput.value.trim();
-//     const emailValue = emailInput.value.trim();
-//     const passwordValue = passwordInput.value.trim();
-//     const confirmPasswordValue = confirmPasswordInput.value.trim();
-
-//     // Example: Check if any field is empty
-//     if (usernameValue === '' || emailValue === '' || passwordValue === '' || confirmPasswordValue === '') {
-//         alert('Please fill in all fields.');
-//         return false;
-//     }
+    return true;
+}
 
 
-
-//     return true;
-// }
