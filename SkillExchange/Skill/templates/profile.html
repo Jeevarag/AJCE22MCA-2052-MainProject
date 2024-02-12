@@ -227,6 +227,10 @@
                 <a href="{% url 'session_schedule'  %}">Sessions scheduled</a>
                 <a href="{% url 'skillpoint_request'  %}">Skill Points Requests</a>
                 <a href="{% url 'skillpoint_request_status'  %}">Skill Points Status</a>
+                <a href="{% url 'collab_requests' %}" id="check_request">Collaboration Requests</a>
+                <a href="{% url 'sent_collab_requests' %}" id="check_request">View Sent Collab Requests</a>
+                <a href="{% url 'collab_schedule' %}" id="check_request">Collab Sessions</a>
+                <a href="">Messages</a>
             {% endif %}
     </div>
 
@@ -279,6 +283,11 @@
                     <label for="request_message">Send a Skill Request:</label>
                     <textarea id="request_message" name="message" rows="4" cols="50"></textarea>
                     <button type="submit" class="btn btn-primary">Send Request</button>
+                </form>
+                <form method="post" action="{% url 'send_collab_request' user.id %}">
+                    {% csrf_token %}
+                    <label for="request_collab">Send Collaboration Request</label>
+                    <button type="submit" class="btn btn-primary">Collaborate</button>
                 </form>
             {% endif %}
         </div>

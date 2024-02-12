@@ -594,6 +594,83 @@ def session_schedule(request):
     return render(request, 'session_schedule.html', {'skill_sessions': skill_sessions})
 
 
+def send_collab_request(request, receiver_id):
+    if request.method == 'POST':
+        receiver = get_object_or_404(CustomUser, id=receiver_id)
+        message = request.POST.get('message')
+        CollabRequest.objects.create(
+            sender=request.user, receiver=receiver, status='pending')
+        # Redirect to a success page or user profile
+        return redirect('profile', username=receiver.username)
+
+
+def accept_collab_request(request, request_id):
+    if request.method == 'POST':
+        collab_request = get_object_or_404(
+            CollabRequest, id=request_id, receiver=request.user, status='pending')
+        collab_request.status = 'accepted'
+        collab_request.save()
+
+        # Redirect to a form for scheduling the session
+        return redirect('schedule_collab', request_id=collab_request.id)
+
+
+def reject_collab_request(request, request_id):
+    if request.method == 'POST':
+        collab_request = get_object_or_404(
+            CollabRequest, id=request_id, receiver=request.user, status='pending')
+        collab_request.status = 'rejected'
+        collab_request.save()
+        # Redirect to a success page or user profile
+        return redirect('profile', username=request.user.username)
+
+
+def collab_requests(request):
+    pending_requests = CollabRequest.objects.filter(
+        receiver=request.user, status='pending')
+    return render(request, 'collab_request.html', {'pending_requests': pending_requests})
+
+
+def sent_collab_requests(request):
+    # Fetch the skill requests sent by the current user
+    sent_requests = CollabRequest.objects.filter(sender=request.user)
+    return render(request, 'sent_collab_requests.html', {'sent_requests': sent_requests})
+
+
+def schedule_collab(request, request_id):
+    collab_request = get_object_or_404(
+        CollabRequest, id=request_id, receiver=request.user, status='accepted')
+
+    if request.method == 'POST':
+        form = CollabSessionForm(request.POST)
+        if form.is_valid():
+            date_and_time = form.cleaned_data['date_and_time']
+
+            # Create a session for the accepted skill request
+            CollabSession.objects.create(
+                collab_request=collab_request,
+                date_and_time=date_and_time,
+                status='scheduled'
+            )
+
+            messages.success(request, 'Collab session scheduled successfully!')
+            return redirect('profile', username=request.user.username)
+    else:
+        form = CollabSessionForm()
+
+    return render(request, 'schedule_collab.html', {'form': form, 'collab_request': collab_request})
+
+
+def collab_schedule(request):
+    # Fetch all skill sessions for the current user, regardless of status, and order by status
+    collab_sessions = CollabSession.objects.filter(
+        Q(collab_request__receiver=request.user) | Q(
+            collab_request__sender=request.user)
+    ).order_by('-status')
+
+    return render(request, 'collab_schedule.html', {'collab_sessions': collab_sessions})
+
+
 def create_review(request, session_id):
     skill_session = get_object_or_404(SkillSession, id=session_id)
 

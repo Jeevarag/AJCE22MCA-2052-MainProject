@@ -1,0 +1,130 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Add Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Schedule Session</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #dbe9f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        .logo img {
+            max-height: 50px; /* Adjust the height as needed */
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto; /* Move username to the right */
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #f0f5f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            border-top: 1px solid #c9d6df;
+        }
+
+        /* Add Bootstrap Form Styling */
+        .container form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container form input {
+            border: 1px solid #b3c1cc; /* Light blue border */
+            border-radius: 5px; /* Rounded edges */
+            margin-bottom: 10px;
+            padding: 10px;
+            width: calc(100% - 20px); /* Full width with padding adjustment */
+        }
+
+        .container form button {
+            border-radius: 5px; /* Rounded edges */
+            padding: 8px 12px; /* Adjusted padding for a smaller button */
+            background-color: #add8e6; /* Light blue color */
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 200px; /* Full width with padding adjustment */
+        }
+
+        .container h2,
+        .container p {
+            text-align: center; /* Center align text */
+        }
+
+        /* Your existing styles go here */
+
+    </style>
+</head>
+<body>
+    <header>
+            <a href="{% url 'profile' %}">My profile</a>
+        <!-- Add your header content here -->
+        <!-- <div class="logo">
+            <img src="{% static 'your_logo.png' %}" alt="Logo">
+        </div> -->
+        <div class="user-info">
+            <p>Hello, {{ user.username }}</p>
+            <!-- Add other user information if needed -->
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Schedule Collab Session</h2>
+        <p>Schedule a collab session for {{ collab_request.sender.username }} to learn {{ collab_request.skill.name }}.</p>
+
+        <!-- Bootstrap Form Styling -->
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Schedule Collab</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+
+    <!-- Add Bootstrap JS and Popper.js for Bootstrap features -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Add Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Collab Sessions</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #dbe9f6;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 60px; /* Adjusted to accommodate the fixed footer */
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        .logo img {
+            max-height: 50px; /* Adjust the height as needed */
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto; /* Move username to the right */
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        .profile-link a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin-right: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #f0f5f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 70px; /* Increased margin for space between content and footer */
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            border-top: 1px solid #c9d6df;
+            display: none; /* Initially hidden */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Add your header content here -->
+        <!-- <div class="logo">
+            <img src="{% static 'your_logo.png' %}" alt="Logo">
+        </div> -->
+        <div class="profile-link">
+            <a href="{% url 'profile' %}">Profile</a>
+        </div>
+        <div class="user-info">
+            <p>Hello, {{ user.username }}</p>
+            <!-- Add other user information if needed -->
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Your Scheduled Collaboration Sessions</h2>
+
+        {% if collab_sessions %}
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <!-- <th>Manage</th> -->
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in collab_sessions %}
+                        <tr>
+                            <td>{{ session.collab_request.sender.username }}</td>
+                            <td>{{ session.date_and_time|date:"Y-m-d" }}</td>
+                            <td>{{ session.date_and_time|date:"l" }}</td>
+                            <td>{{ session.date_and_time|date:"g:i a" }}</td>
+                            <!-- <td>
+                                {% if session.status == 'scheduled' %}
+                                    <a href="{% url 'manage_session' session_id=session.id %}" class="btn btn-primary">Manage Session</a>
+                                {% elif session.status == 'completed' %}
+                                    <a href="{% url 'create_review' session_id=session.id %}" class="btn btn-success">Post Review</a>
+                                {% endif %}
+                            </td> -->
+                            <td>{{ session.status }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No scheduled Collaboration sessions.</p>
+        {% endif %}
+    </div>
+
+    <footer id="footer">
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+
+    <!-- Add Bootstrap JS and Popper.js for Bootstrap features -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Show footer when scrolling to the bottom
+        document.addEventListener('scroll', function() {
+            var footer = document.getElementById('footer');
+            var distanceToBottom = document.body.scrollHeight - (window.innerHeight + window.scrollY);
+            if (distanceToBottom < 10) {
+                footer.style.display = 'block';
+            } else {
+                footer.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

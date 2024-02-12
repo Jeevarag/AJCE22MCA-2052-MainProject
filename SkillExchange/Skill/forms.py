@@ -44,3 +44,7 @@ class SkillPointRequestForm(forms.ModelForm):
     class Meta:
         model = SkillPointRequest
         fields = ['points_requested']
+
+
+class CollabSessionForm(forms.Form):
+    date_and_time = forms.DateTimeField(label='Date and Time', input_formats=['%Y-%m-%dT%H:%M'], widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))

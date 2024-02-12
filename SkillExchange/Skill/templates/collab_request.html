@@ -1,0 +1,170 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Incoming Skill Requests</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("{% static 'Images/collab.jpg' %}");
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        header {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #5c5c5c;
+            margin: 0 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info p {
+            margin-right: 10px;
+        }
+
+        footer {
+            background-color: #f0f5f9;
+            color: #5c5c5c;
+            text-align: center;
+            padding: 10px 0;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(240, 245, 249, 0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .profile-left {
+            flex: 2; /* Increase the size of profile-left */
+            padding-right: 20px; /* Add some right padding */
+        }
+
+        .table-container {
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Customize button colors */
+        .btn-accept {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-reject {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about_us' %}">About</a></li>
+                <li><a href="{% url 'profile' %}">My profile</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <p>Hello, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
+        </div>
+    </header>
+
+    <div class="profile-container">
+        <div class="profile-left">
+            <h1>Incoming Collaboration Requests</h1>
+            <div class="table-container">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Accept</th>
+                            <th>Reject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in pending_requests %}
+                            <tr>
+                                <td>{{ request.sender.username }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'accept_collab_request' request.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-accept">Accept</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="post" action="{% url 'reject_collab_request' request.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-reject">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">You haven't received any skill requests yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener("DOMContentLoaded", function () {
+            // Find the logout button by its ID
+            var logoutButton = document.getElementById("logout-link");
+    
+            // Add a click event listener to the logout button
+            logoutButton.addEventListener("click", function () {
+                // Reload the page after a short delay (you can adjust the delay as needed)
+                setTimeout(function () {
+                    location.reload();
+                }, 1000); // Reload after 1 second (1000 milliseconds)
+            });
+        });
+    </script>
+</body>
+</html>

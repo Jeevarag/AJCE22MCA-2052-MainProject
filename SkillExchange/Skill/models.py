@@ -158,3 +158,30 @@ class SkillPointRequest(models.Model):
 
     def __str__(self):
         return f"SkillPointRequest from {self.sender.username} to {self.receiver.username} ({self.get_status_display()})"
+
+
+class CollabRequest(models.Model):
+    sender = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="sent_collab_requests")
+    receiver = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="received_collab_requests")
+    status = models.CharField(max_length=10, choices=[(
+        'pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')])
+
+    def __str__(self):
+        return f"Skill Request from {self.sender} to {self.receiver} for {self.skill.name}"
+
+
+class CollabSession(models.Model):
+    collab_request = models.ForeignKey(
+        'SkillRequest', on_delete=models.CASCADE, related_name='skill_sessions')
+    date_and_time = models.DateTimeField()
+    sender_status = models.CharField(max_length=20, choices=[(
+        'attended', 'Attended'), ('absent', 'Absent')], blank=True, null=True)
+    receiver_status = models.CharField(max_length=20, choices=[(
+        'attended', 'Attended'), ('absent', 'Absent')], blank=True, null=True)
+    status = models.CharField(max_length=20, choices=[(
+        'scheduled', 'Scheduled'), ('completed', 'Completed')], default='scheduled')
+
+    def __str__(self):
+        return f"Skill Session for {self.skill_request.skill.name} with {self.skill_request.sender.username}"
