@@ -117,11 +117,25 @@
             <button type="submit" class="btn btn-success">Schedule Collab</button>
         </form>
     </div>
-
     <footer>
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const collabSessionForm = document.getElementById('collabSessionForm');
+            const dateAndTimeInput = collabSessionForm.querySelector('#id_date_and_time');
+    
+            collabSessionForm.addEventListener('submit', function (event) {
+                const selectedDate = new Date(dateAndTimeInput.value);
+                const currentDate = new Date();
+    
+                if (selectedDate < currentDate) {
+                    alert('Please select a date and time in the future.');
+                    event.preventDefault();  // Prevent form submission
+                }
+            });
+        });
+    </script>
     <!-- Add Bootstrap JS and Popper.js for Bootstrap features -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

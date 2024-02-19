@@ -740,3 +740,62 @@ def pay_razor(request):
 @csrf_exempt
 def success(request):
     return render(request, "success.html")
+
+
+@login_required
+def chat(request, receiver_id=None):
+    users = []  # Initialize users as an empty list
+
+    if receiver_id:
+        receiver = get_object_or_404(CustomUser, id=receiver_id)
+        messages = Message.objects.filter(
+            (Q(sender=request.user, receiver=receiver) | Q(sender=receiver, receiver=request.user))
+        ).order_by('timestamp')
+    else:
+        # Fetch the list of users the current user has chatted with
+        users_chatted_with = Message.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user)
+        ).values('sender', 'receiver').annotate(last_message_time=Max('timestamp'))
+
+        # Fetch user objects based on user IDs
+        users = CustomUser.objects.filter(
+            Q(id__in=[user['sender'] for user in users_chatted_with]) |
+            Q(id__in=[user['receiver'] for user in users_chatted_with])
+        )
+
+        # Sort the users by the time of the last message
+        users = sorted(users, key=lambda user: next(item['last_message_time'] for item in users_chatted_with if user.id in [item['sender'], item['receiver']]), reverse=True)
+
+        # If there's at least one user, set the first user as the default receiver
+        if users:
+            receiver = users[0]
+            receiver_id = receiver.id
+            messages = Message.objects.filter(
+                (Q(sender=request.user, receiver=receiver) | Q(sender=receiver, receiver=request.user))
+            ).order_by('timestamp')
+        else:
+            receiver = None
+            messages = []
+
+    return render(request, 'chat.html', {'receiver': receiver, 'messages': messages, 'users': users, 'selected_receiver_id': int(receiver_id) if receiver_id else None})
+
+
+@login_required
+def send_message(request):
+    if request.method == 'POST':
+        receiver_id = request.POST.get('receiver_id')
+        content = request.POST.get('content')
+
+        # You should replace this with your actual user model and message creation logic
+        # Assuming you have a 'Message' model with 'sender', 'receiver', and 'content' fields
+        try:
+            receiver = CustomUser.objects.get(id=receiver_id)
+            message = Message.objects.create(
+                sender=request.user, receiver=receiver, content=content)
+            messages.success(request, 'Message sent successfully!')
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Receiver not found.')
+
+    # Redirect to the user's profile or any other appropriate page
+    return redirect('chat', receiver_id=receiver_id)
+

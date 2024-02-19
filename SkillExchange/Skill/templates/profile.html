@@ -254,6 +254,9 @@
             {% if user == request.user %}
                 <a href="{% url 'edit_profile' %}"><button class="edit-profile-button">Edit Profile</button></a>
             {% endif %}
+            {% if user != request.user %}
+                <a href="{% url 'chat' receiver_id=user.id %}"><button class="edit-profile-button">Message</button></a>
+            {% endif %}
         </div>
         <div class="profile-right">
             <p>Followers: {{ user.followers_count }}</p>

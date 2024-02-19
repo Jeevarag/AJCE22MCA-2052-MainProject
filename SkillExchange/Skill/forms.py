@@ -31,8 +31,17 @@ class UserSearchForm(forms.Form):
     
 
 class SkillSessionForm(forms.Form):
-    date_and_time = forms.DateTimeField(label='Date and Time', input_formats=['%Y-%m-%dT%H:%M'], widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+    date_and_time = forms.DateTimeField(
+        label='Date and Time',
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'})
+    )
     duration_minutes = forms.IntegerField(label='Duration (minutes)')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set the minimum value for the date_and_time field to the current date and time
+        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
 class ReviewForm(forms.ModelForm):
     class Meta:
@@ -47,4 +56,13 @@ class SkillPointRequestForm(forms.ModelForm):
 
 
 class CollabSessionForm(forms.Form):
-    date_and_time = forms.DateTimeField(label='Date and Time', input_formats=['%Y-%m-%dT%H:%M'], widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+    date_and_time = forms.DateTimeField(
+        label='Date and Time',
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(CollabSessionForm, self).__init__(*args, **kwargs)
+        # Set the min attribute to the current datetime
+        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
