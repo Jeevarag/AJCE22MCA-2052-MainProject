@@ -1,285 +1,365 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Homepage</title>
     <!-- Include the Montserrat font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+    />
     <style>
-        body, h1, h2, h3, p, ul, li {
-            margin: 0;
-            padding: 0;
-        } 
+      body,
+      h1,
+      h2,
+      h3,
+      p,
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            font-family: 'Montserrat', sans-serif; 
-            background-color: #dbe9f6;
-        }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: #dbe9f6;
+      }
 
-        header {
-            background-color: #f0f5f9;
-            color: #5c5c5c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-        }
+      header {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+      }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            align-items: center;
-        }
+      nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+      }
 
-        nav a {
-            text-decoration: none;
-            color: #5c5c5c;
-            margin: 0 20px;
-        }
+      nav a {
+        text-decoration: none;
+        color: #5c5c5c;
+        margin: 0 20px;
+      }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
+      .user-info {
+        display: flex;
+        align-items: center;
+      }
 
-        .user-info p {
-            margin-right: 10px;
-        }
+      .user-info p {
+        margin-right: 10px;
+      }
 
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #80a4c2;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #80a4c2;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+      }
 
-        .btn:hover {
-            background-color: #658da9;
-        }
+      .btn:hover {
+        background-color: #658da9;
+      }
 
+      .hero {
+        background-size: cover;
+        text-align: center;
+        padding: 50px 0;
+        color: #5c5c5c;
+      }
 
-        .hero {
-            background-size: cover;
-            text-align: center;
-            padding: 50px 0;
-            color: #5c5c5c;
-        }
+      .hero h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
 
-        .hero h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
+      .user-profile {
+        background-size: cover;
+        text-align: left;
+        padding: 100px 100px;
+        color: #5c5c5c;
+      }
 
-        .user-profile{
-            background-size: cover;
-            text-align: left;
-            padding: 100px 100px;
-            color: #5c5c5c;
-        }
+      .action-containers {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
 
-        .action-containers {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
+      .action-container {
+        flex: 1;
+        background-size: cover;
+        text-align: center;
+        padding: 50px 0;
+        color: #5c5c5c;
+        transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        /* margin: 20px; */
+        margin-bottom: 50px;
+        margin-left: 40px;
+        margin-right: 40px;
+        margin-top: 5px;
+        border-radius: 20px; /* Rounded edges */
+        min-height: 450px; /* Adjust the height as needed */
+        width: 300px;
+      }
+      .search-form {
+        display: flex;
+        align-items: center;
+      }
 
-        .action-container {
-            flex: 1;
-            background-size: cover;
-            text-align: center;
-            padding: 50px 0;
-            color: #5c5c5c;
-            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            /* margin: 20px; */
-            margin-bottom: 50px;
-            margin-left: 40px;
-            margin-right: 40px;
-            margin-top: 5px;
-            border-radius: 20px; /* Rounded edges */
-            min-height: 450px; /* Adjust the height as needed */
-            width: 300px;
-        }
-        .search-form {
-            display: flex;
-            align-items: center;
-        }
+      /* Style for the search input */
+      .search-input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 10px 0px 0px 10px;
+        margin-right: 5px;
+      }
 
-        /* Style for the search input */
-        .search-input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 5px;
-        }
+      /* Style for the search button */
+      .search-button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 0px 10px 10px 0px;
+        background-color: #80a4c2;
+        color: #fff;
+        cursor: pointer;
+      }
 
-        /* Style for the search button */
-        .search-button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            background-color: #007bff; /* Use your desired primary color */
-            color: #fff;
-            cursor: pointer;
-        }
+      .action-container:hover {
+        transform: scale(1.1); /* Grow on hover */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      }
 
-        .action-container:hover {
-            transform: scale(1.1); /* Grow on hover */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
+      .learn-container {
+        background-image: url("{% static 'Images/Study.jpg' %}");
+      }
 
-        .learn-container {
-            background-image: url("{% static 'Images/Study.jpg' %}");
-        }
+      .teach-container {
+        background-image: url("{% static 'Images/teach.jpg' %}");
+      }
 
-        .teach-container {
-            background-image: url("{% static 'Images/teach.jpg' %}");
-        }
+      .action-container span {
+        font-size: 24px;
+        display: block;
+      }
 
-        .action-container span {
-            font-size: 24px;
-            display: block;
-        }
+      footer {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        text-align: center;
+        padding: 10px 0;
+        width: 100%;
+        bottom: 0;
+      }
 
-        footer {
-            background-color: #f0f5f9;
-            color: #5c5c5c;
-            text-align: center;
-            padding: 10px 0;
-            width: 100%;
-            bottom: 0;
-        }
+      .notification-container {
+          position: relative;
+      }
 
-        .notification {
-            position: relative;
-            display: inline-block;
-        }
+      #notification-dropdown {
+          position: absolute;
+          top: 30px; /* Adjust as needed to position below the bell icon */
+          right: 0;
+          background-color: #fff;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          border-radius: 5px;
+          padding: 10px;
+          z-index: 2;
+          display: none; /* Hide by default */
+          width: 300px; /* Adjust the width as needed */
+      }
 
-        .notification-button-container {
-            position: relative;
-        }
+      #notification-list {
+          list-style: none;
+          padding: 0;
+          max-height: 200px; /* Adjust as needed */
+          overflow-y: auto;
+          margin-bottom: 10px;
+      }
 
-        .notification-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 10px; /* Increased border radius for a rounded look */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 250px; /* Increased width for larger dropdown */
-            z-index: 1;
-            transform: scaleY(0); /* Initially hidden using scaleY */
-            transform-origin: top;
-            transition: transform 0.3s ease;
-        }
+      .notification-message {
+          font-size: 14px; /* Adjust the font size as needed */
+      }
 
-        .notification-slide-in {
-            animation: slideIn 0.5s ease;
-        }
+      .mark-as-read {
+          background-color: #80a4c2;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          padding: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+          margin-left: 5px;
+      }
 
-        .notification-item {
-            padding: 15px; /* Increased padding for larger notifications */
-            border-bottom: 1px solid #ccc;
-            font-size: 18px; /* Increased font size for larger text */
-        }
+      .mark-as-read:hover {
+          background-color: #658da9;
+      }
 
-        /* Define the slide-in animation */
-        @keyframes slideIn {
-            0% {
-                transform: scaleY(0);
-            }
-            100% {
-                transform: scaleY(1);
-            }
+      #clear-all {
+          display: block;
+          width: 100%;
+          padding: 10px;
+          background-color: #80a4c2;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          text-decoration: none;
+          transition: background-color 0.3s;
+          cursor: pointer;
+      }
+
+      #clear-all:hover {
+          background-color: #658da9;
+      }
+
+      .notification-divider {
+          border: 0.5px solid #ccc;
+          margin: 5px 0;
+      }
+
+      /* Define the slide-in animation */
+      @keyframes slideIn {
+        0% {
+          transform: scaleY(0);
         }
+        100% {
+          transform: scaleY(1);
+        }
+      }
     </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const notificationButton = document.getElementById("notification-button");
-            const notificationDropdown = document.querySelector(".notification-dropdown");
-
-            // Toggle the dropdown when the notification icon is clicked
-            notificationButton.addEventListener("click", function (e) {
-                e.stopPropagation(); // Prevent the document click event from immediately closing the dropdown
-                notificationDropdown.style.display = "block";
-            });
-
-            // Prevent the dropdown from closing when interacting with its content
-            notificationDropdown.addEventListener("click", function (e) {
-                e.stopPropagation(); // Prevent the click event from propagating to the document
-            });
-
-            // Close the dropdown when clicking anywhere else on the screen
-            document.addEventListener("click", function (e) {
-                notificationDropdown.style.display = "none";
-            });
-        });
-    </script>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'about_us' %}">About</a></li>
-                <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
+      <nav>
+        <ul>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'about_us' %}">About</a></li>
+          <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+          <li><a href="{% url 'buy_skillpoints' %}">SkillPoints</a></li>
+        </ul>
+      </nav>
+      <div class="notification-container">
+        <i id="notification-bell" class="fas fa-bell"></i>
+        <div id="notification-dropdown" style="display: none">
+            <ul id="notification-list">
+                {% for notification in notifications %}
+                    <li>
+                        <span class="notification-message">{{ notification.message }}</span>
+                        <button class="mark-as-read" data-notification-id="{{ notification.id }}">Mark as Read</button>
+                    </li>
+                    <hr class="notification-divider">
+                {% endfor %}
             </ul>
-        </nav>
-        <div class="search-bar">
-            <form action="{% url 'search_users' %}" method="GET" class="search-form">
-                <input type="text" name="query" placeholder="Search users..." id="search_user" class="search-input">
-                <button type="submit" class="btn btn-primary search-button">Search</button>
+            <form method="post" action="{% url 'clear_all_notifications' %}">
+                {% csrf_token %}
+                <button type="submit" id="clear-all">Clear All</button>
             </form>
         </div>
-        <div class="user-info">
-            <a href="{% url 'buy_skillpoints' %}">Buy SkillPoints</a>
-            {% if user.profile_picture %}
-                    <div class="profile-picture" style="background-image: url('{{ user.profile_picture.url }}'); width:40px; height:40px; border-radius: 50%; background-size: cover;"></div>
-                {% else %}
-                    <div class="profile-picture" style="background-image: url('/static/Images/profile.jpg'); width:40px; height:40px; border-radius: 50%; background-size: cover;"></div>
-                {% endif %}
-            <p>{{ user.username }}</p>
-            <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
-        </div>
+    </div>
+    </div>
+      <div class="search-bar">
+        <form
+          action="{% url 'search_users' %}"
+          method="GET"
+          class="search-form"
+        >
+          <input
+            type="text"
+            name="query"
+            placeholder="Search users..."
+            id="search_user"
+            class="search-input"
+          />
+          <button type="submit" class="btn btn-primary search-button">
+            Search
+          </button>
+        </form>
+      </div>
+      <div class="user-info">
+        {% if user.profile_picture %}
+        <div
+          class="profile-picture"
+          style="background-image: url('{{ user.profile_picture.url }}'); width:50px; height:50px; border-radius: 50%; background-size: cover;"
+        ></div>
+        {% else %}
+        <div
+          class="profile-picture"
+          style="
+            background-image: url('/static/Images/profile.jpg');
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: cover;
+          "
+        ></div>
+        {% endif %}
+        <p>{{ user.username }}</p>
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link"
+          >Logout</a
+        >
+      </div>
     </header>
 
     <section class="hero">
-        <div class="hero-content">
-            <h1>Welcome to SkillSwap</h1>
-            <div class="action-containers">
-                <a id="teach" href="{% url 'learn' %}" class="action-container learn-container">
-                    <span>Learn</span>
-                </a>
-                <a href="{% url 'teach' %}" class="action-container teach-container">
-                    <span>Teach</span>
-                </a>
-            </div>
+      <div class="hero-content">
+        <h1>Welcome to SkillSwap</h1>
+        <div class="action-containers">
+          <a
+            id="teach"
+            href="{% url 'learn' %}"
+            class="action-container learn-container"
+          >
+            <span>Learn</span>
+          </a>
+          <a href="{% url 'teach' %}" class="action-container teach-container">
+            <span>Teach</span>
+          </a>
         </div>
-    </section>    
+      </div>
+    </section>
 
     <footer>
-        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+      <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var logoutButton = document.getElementById("logout-link");
-            logoutButton.addEventListener("click", function () {
-                setTimeout(function () {
-                    location.reload();
-                }, 1000);
-            });
+      document.addEventListener("DOMContentLoaded", function () {
+        var logoutButton = document.getElementById("logout-link");
+        logoutButton.addEventListener("click", function () {
+          setTimeout(function () {
+            location.reload();
+          }, 1000);
         });
-    </script>
-</body>
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          var notificationBell = document.getElementById("notification-bell");
+          var notificationDropdown = document.getElementById("notification-dropdown");
+      
+          notificationBell.addEventListener("click", function () {
+              // Toggle the display of the notification dropdown
+              notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
+          });
+      });
+      </script>
+  </body>
 </html>

@@ -42,7 +42,21 @@ def index(request):
 @login_required(login_url='login')
 @never_cache
 def home(request):
-    return render(request, 'home.html')
+    notifications = Notification.objects.filter(
+        recipient=request.user, is_read=False)
+    return render(request, 'home.html',  {'notifications': notifications})
+
+
+def mark_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user, is_read=False)
+    notification.is_read = True
+    notification.save()
+    return redirect('home')
+
+def clear_all_notifications(request):
+    if request.method == 'POST':
+        Notification.objects.filter(recipient=request.user).delete()
+    return redirect('home')
 
 
 def register(request):

@@ -55,4 +55,6 @@ urlpatterns = [
     path('accounts/login/', views.user_login, name='login'),
     path('chat/<int:receiver_id>/', views.chat, name='chat'),
     path('send_message/', views.send_message, name='send_message'),
+    path('mark_as_read/<int:notification_id>/', views.mark_as_read, name='mark_as_read'),
+    path('clear_all_notifications/', views.clear_all_notifications, name='clear_all_notifications'),
 ]
