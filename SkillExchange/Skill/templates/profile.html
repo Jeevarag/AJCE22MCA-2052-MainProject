@@ -73,6 +73,7 @@
             flex: 1;
             padding: 20px;
             text-align: left;
+            border-right: 1px solid #ddd; /* Vertical line separating sections */
         }
 
         .profile-right {
@@ -81,7 +82,17 @@
             text-align: center;
             display: flex;
             flex-direction: column;
+        }
 
+        /* New styles for horizontal lines */
+        .horizontal-line {
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+
+        .horizontal-line_m {
+            border-top: 1px solid #ddd;
+            margin: 5px 0;
         }
 
         .profile-picture {
@@ -100,7 +111,7 @@
             background-color: #80a4c2;
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             text-decoration: none;
             transition: background-color 0.3s;
             margin-top: 10px;
@@ -128,13 +139,27 @@
             background-color: #80a4c2;
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             text-decoration: none;
             transition: background-color 0.3s;
         }
 
         .btn:hover {
             background-color: #658da9;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px; /* Adjust margin as needed */
+        }
+
+        #follow_af,
+        #follow_bf,
+        #unfollow {
+            padding: 8px; /* Adjust the padding for height and width */
+            border-radius: 8px; /* Adjust the border-radius for rounded corners */
+            width: 150px;
         }
 
         /* Sidebar styles */
@@ -191,6 +216,19 @@
         .review-text {
             flex: 1;
         }
+
+        .transparent-input {
+            background-color: transparent;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .transparent-input:hover {
+            background-color: #d4e6f2; /* Change the color on hover as needed */
+        }
+
         @media (min-width: 768px) {
             .profile-container {
                 flex-direction: row;
@@ -223,13 +261,21 @@
     <div class="sidebar" id="sidebar">
             {% if user == request.user %}
                 <a href="{% url 'skill_requests' %}" id="check_request">Requests</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'sent_skill_requests' %}" id="sent_requests">View Sent Skill Requests</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'session_schedule'  %}">Sessions scheduled</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'skillpoint_request'  %}">Skill Points Requests</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'skillpoint_request_status'  %}">Skill Points Status</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'collab_requests' %}" id="check_request">Collaboration Requests</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'sent_collab_requests' %}" id="check_request">View Sent Collab Requests</a>
+                <div class="horizontal-line_m"></div>
                 <a href="{% url 'collab_schedule' %}" id="check_request">Collab Sessions</a>
+                <div class="horizontal-line_m"></div>
                 <a href="">Messages</a>
             {% endif %}
     </div>
@@ -247,31 +293,34 @@
                     {{ user_location.city }}, {{ user_location.state }}, {{ user_location.country }}
                 </p>
             {% endif %}
+            <div class="horizontal-line"></div>
             <h2>About Me</h2>
-            <p>
-                {{ user.about_me }}
-            </p>
+            <p>{{ user.about_me }}</p>
             {% if user == request.user %}
                 <a href="{% url 'edit_profile' %}"><button class="edit-profile-button">Edit Profile</button></a>
             {% endif %}
             {% if user != request.user %}
                 <a href="{% url 'chat' receiver_id=user.id %}"><button class="edit-profile-button">Message</button></a>
             {% endif %}
+            
         </div>
         <div class="profile-right">
-            <p>Followers: {{ user.followers_count }}</p>
-            <p>Following: {{ user.following_count }}</p>
+            <p>Followers: {{ user.followers_count }}&nbsp;&nbsp;&nbsp;Following: {{ user.following_count }}</p>
             {% if user != request.user %}
-                {% if follow %}
-                    {% if follow.is_following %}
-                        <a href="{% url 'follow_user' %}?uf=0&id={{user.id}}" class="btn btn-primary md-1">Unfollow</a>
+                <div class="button-container">
+                    {% if follow %}
+                        {% if follow.is_following %}
+                            <a id="unfollow" href="{% url 'follow_user' %}?uf=0&id={{user.id}}" class="btn btn-primary md-1">Unfollow</a>
+                        {% else %}
+                            <a id="follow_af" href="{% url 'follow_user' %}?f=0&id={{user.id}}" class="btn">Follow</a>
+                        {% endif %}
                     {% else %}
-                        <a href="{% url 'follow_user' %}?f=0&id={{user.id}}" class="btn">Follow</a>
+                        <a id="follow_bf" href="{% url 'follow_user' %}?nf=0&id={{user.id}}" class="btn">Follow</a>
                     {% endif %}
-                {% else %}
-                    <a href="{% url 'follow_user' %}?nf=0&id={{user.id}}" class="btn">Follow</a>
-                {% endif %}
+                </div>
             {% endif %}
+            <!-- Horizontal line -->
+            <div class="horizontal-line"></div>
             <h2>Skills</h2>
             <ul>
                 {% for skill in user_skills %}
@@ -279,17 +328,21 @@
                 {% endfor %}
             </ul>
             {% if user == request.user %}
-                <a href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
+                <a id="skill_add" href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
             {% else %}
                 <form method="post" action="{% url 'send_skill_request' user.id %}">
                     {% csrf_token %}
-                    <label for="request_message">Send a Skill Request:</label>
-                    <textarea id="request_message" name="message" rows="4" cols="50"></textarea>
+                    <input type="text" id="request_message" name="message" placeholder="Send a Skill Request" class="transparent-input" />
                     <button type="submit" class="btn btn-primary">Send Request</button>
                 </form>
+                <br>
+                <br>
+                <div class="horizontal-line"></div>
                 <form method="post" action="{% url 'send_collab_request' user.id %}">
                     {% csrf_token %}
                     <label for="request_collab">Send Collaboration Request</label>
+                    <br>
+                    <br>
                     <button type="submit" class="btn btn-primary">Collaborate</button>
                 </form>
             {% endif %}

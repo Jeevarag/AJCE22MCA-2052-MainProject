@@ -6,13 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Homepage</title>
     <!-- Include the Montserrat font from Google Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap"
-      rel="stylesheet"
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
     />
     <style>
       body,
@@ -173,29 +169,35 @@
           position: relative;
       }
 
+      #notification-bell {
+          font-size: 24px; /* Adjust the font size as needed */
+          cursor: pointer;
+      }
+
       #notification-dropdown {
           position: absolute;
-          top: 30px; /* Adjust as needed to position below the bell icon */
+          top: 30px;
           right: 0;
           background-color: #fff;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
           border-radius: 5px;
           padding: 10px;
           z-index: 2;
-          display: none; /* Hide by default */
-          width: 300px; /* Adjust the width as needed */
+          display: none;
+          width: 300px;
+          transition: max-height 0.3s ease-in-out; /* Added transition property */
+          max-height: 300px; /* Set a larger max-height value */
+          overflow: hidden; /* Hide overflow content */
       }
 
       #notification-list {
           list-style: none;
           padding: 0;
-          max-height: 200px; /* Adjust as needed */
-          overflow-y: auto;
           margin-bottom: 10px;
       }
 
       .notification-message {
-          font-size: 14px; /* Adjust the font size as needed */
+          font-size: 14px;
       }
 
       .mark-as-read {
@@ -235,6 +237,11 @@
           margin: 5px 0;
       }
 
+      /* Add a class for the expanded state */
+      #notification-dropdown.expanded {
+          max-height: 200px; /* Set the desired expanded height */
+      }
+
       /* Define the slide-in animation */
       @keyframes slideIn {
         0% {
@@ -264,17 +271,20 @@
                 {% for notification in notifications %}
                     <li>
                         <span class="notification-message">{{ notification.message }}</span>
-                        <button class="mark-as-read" data-notification-id="{{ notification.id }}">Mark as Read</button>
                     </li>
                     <hr class="notification-divider">
                 {% endfor %}
             </ul>
-            <form method="post" action="{% url 'clear_all_notifications' %}">
-                {% csrf_token %}
-                <button type="submit" id="clear-all">Clear All</button>
-            </form>
+            
+            {% if notifications %}
+                <form method="post" action="{% url 'clear_all_notifications' %}">
+                    {% csrf_token %}
+                    <button type="submit" id="clear-all">Clear All</button>
+                </form>
+            {% else %}
+                <p>No new notifications</p>
+            {% endif %}
         </div>
-    </div>
     </div>
       <div class="search-bar">
         <form
@@ -342,24 +352,53 @@
     </footer>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        var logoutButton = document.getElementById("logout-link");
-        logoutButton.addEventListener("click", function () {
-          setTimeout(function () {
-            location.reload();
-          }, 1000);
-        });
-      });
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
           var notificationBell = document.getElementById("notification-bell");
           var notificationDropdown = document.getElementById("notification-dropdown");
-      
+
+          // Initially, assume there are no new notifications
+          var hasNewNotifications = false;
+
+          // Fetch the initial state of notifications from the server using AJAX
+          fetch("/get_notification_status")
+              .then(response => response.json())
+              .then(data => {
+                  // Update hasNewNotifications based on the fetched data
+                  hasNewNotifications = data.hasNewNotifications;
+
+                  // Update the icon based on the presence of new notifications
+                  updateNotificationIcon(hasNewNotifications);
+              });
+
           notificationBell.addEventListener("click", function () {
               // Toggle the display of the notification dropdown
               notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
+
+              // If the dropdown is displayed, consider notifications as read and update the icon
+              if (notificationDropdown.style.display === "block") {
+                  hasNewNotifications = false;
+                  updateNotificationIcon(hasNewNotifications);
+              }
           });
       });
+
+      function updateNotificationIcon(hasNewNotifications) {
+          var notificationBell = document.getElementById("notification-bell");
+
+          // Assuming you have separate classes for filled and empty icons (adjust accordingly)
+          var filledIconClass = "fas fa-bell"; // Replace with the class for a filled bell icon
+          var emptyIconClass = "far fa-bell"; // Replace with the class for an empty bell icon
+
+          // Update the icon class based on the presence of new notifications
+          notificationBell.className = hasNewNotifications ? filledIconClass : emptyIconClass;
+      }
       </script>
+      <script>
+      // Function to refresh the page every 10 seconds
+      setInterval(function () {
+        location.reload();
+      }, 5000); // Adjust the time interval as needed (in milliseconds)
+      document.getElementById("message-container").scrollTop =
+        document.getElementById("message-container").scrollHeight;
+    </script>
   </body>
 </html>
