@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <title>My Profile</title>
     <style>
         body {
@@ -87,7 +90,7 @@
         /* New styles for horizontal lines */
         .horizontal-line {
             border-top: 1px solid #ddd;
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
         .horizontal-line_m {
@@ -229,6 +232,7 @@
             background-color: #d4e6f2; /* Change the color on hover as needed */
         }
 
+
         @media (min-width: 768px) {
             .profile-container {
                 flex-direction: row;
@@ -248,8 +252,8 @@
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'about_us' %}">About</a></li>
-                <li><a href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'community_home' %}">Community</a></li>
+                <li><a href="">Messages</a></li>
             </ul>
         </nav>
         <div class="user-info">
@@ -276,7 +280,7 @@
                 <div class="horizontal-line_m"></div>
                 <a href="{% url 'collab_schedule' %}" id="check_request">Collab Sessions</a>
                 <div class="horizontal-line_m"></div>
-                <a href="">Messages</a>
+                
             {% endif %}
     </div>
 
@@ -305,7 +309,11 @@
             
         </div>
         <div class="profile-right">
-            <p>Followers: {{ user.followers_count }}&nbsp;&nbsp;&nbsp;Following: {{ user.following_count }}</p>
+            <p>
+                Followers: <a href="{% url 'view_followers' user.id %}">{{ user.followers_count }}</a>
+                &nbsp;&nbsp;&nbsp;
+                Following: <a href="{% url 'view_following' user.id %}">{{ user.following_count }}</a>
+              </p>
             {% if user != request.user %}
                 <div class="button-container">
                     {% if follow %}
@@ -321,14 +329,20 @@
             {% endif %}
             <!-- Horizontal line -->
             <div class="horizontal-line"></div>
-            <h2>Skills</h2>
+            <!-- <h2>Skills</h2> -->
+            <strong>Skills</strong>
             <ul>
                 {% for skill in user_skills %}
-                    <li>{{ skill.name }} - {{ skill.description }}</li>
+                    <li>
+                        <strong>{{ skill.name }}</strong> - {{ skill.description }} ({{ skill.get_category_display }})
+                    </li>
                 {% endfor %}
             </ul>
             {% if user == request.user %}
                 <a id="skill_add" href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
+                <div class="horizontal-line"></div>
+                <p>What to learn?</p>
+                <a id="skill_add" href=""><button class="add-skill-button">Set Preferences</button></a>
             {% else %}
                 <form method="post" action="{% url 'send_skill_request' user.id %}">
                     {% csrf_token %}
@@ -369,7 +383,6 @@
     <footer>
         <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
         // Find the logout button by its ID

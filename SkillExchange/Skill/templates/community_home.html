@@ -1,0 +1,336 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <title>Communities</title>
+    <style>
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: #dbe9f6;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        padding-bottom: 50px;
+        min-height: 100vh;
+      }
+
+      header {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        animation: expandHeader 1s ease-out;
+      }
+
+      @keyframes expandHeader {
+        from {
+          height: 0;
+        }
+        to {
+          height: 80px;
+        }
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+      }
+
+      nav a {
+        text-decoration: none;
+        color: #5c5c5c;
+        margin: 0 20px;
+      }
+
+      footer {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        text-align: center;
+        padding: 10px 0;
+      }
+
+      .container-fluid {
+        padding: 20px;
+      }
+
+      .communities-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+
+      .communities-container h2 {
+        color: #007bff;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+      }
+
+      .community-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .community-list li {
+        margin-bottom: 10px;
+        background-color: #f0f5f9;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .create-community-btn-container {
+        text-align: right;
+        margin-top: 20px;
+      }
+
+      .available-communities-container {
+        margin-top: 20px;
+      }
+
+      .available-communities-container h2 {
+        color: #007bff;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+      }
+
+      .available-community-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .available-community-list li {
+        margin-bottom: 10px;
+        background-color: #f0f5f9;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .modal-dialog {
+        max-width: 600px;
+      }
+
+      .modal-content {
+        border-radius: 20px;
+      }
+
+      .modal-header {
+        border-bottom: none;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #80a4c2;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+      }
+
+      .btn:hover {
+        background-color: #658da9;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SkillSwap Communities</h1>
+      <nav>
+        <ul>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'profile' %}">My profile</a></li>
+        </ul>
+      </nav>
+      <div class="user-info">
+        <p>Hello, {{ user.username }}</p>
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link"
+          >Logout</a
+        >
+      </div>
+    </header>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Container 1: Joined Communities -->
+        <div class="col-md-4 communities-container">
+          <h2>Communities You Joined</h2>
+          <ul class="community-list">
+            {% for community in communities_joined %}
+            <li><a href="{% url 'community_page' community.id %}">{{ community.name }}</a></li>
+            <!-- Add other community details as needed -->
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Container 2: Create Community Button -->
+        <div class="col-md-4 create-community-btn-container">
+          <button
+            class="btn btn-primary"
+            data-toggle="modal"
+            data-target="#createCommunityModal"
+          >
+            Create Community
+          </button>
+        </div>
+        <div
+          class="modal"
+          id="createCommunityModal"
+          tabindex="-1"
+          role="dialog"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Create a Community</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form method="post" action="{% url 'community_home' %}">
+                  {% csrf_token %} {{ create_community_form.as_p }}
+                  <button
+                    type="submit"
+                    name="create_community"
+                    class="btn btn-primary"
+                  >
+                    Create Community
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Container 3: Available Communities -->
+        <div class="col-md-4 available-communities-container">
+          <h2>Communities Available to Join</h2>
+          <ul class="available-community-list">
+            {% for community in communities_available %}
+            <li>
+              <h3>{{ community.name }}</h3>
+              <p>{{ community.description }}</p>
+              <form
+                id="joinCommunityForm_{{ community.id }}"
+                method="post"
+                action="{% url 'community_home' %}"
+              >
+                {% csrf_token %}
+                <input
+                  type="hidden"
+                  name="community_id"
+                  value="{{ community.id }}"
+                />
+                <button
+                  type="button"
+                  onclick="joinCommunity('{{ community.id }}')"
+                  class="btn btn-primary"
+                >
+                  Join Community
+                </button>
+              </form>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Find the logout button by its ID
+        var logoutButton = document.getElementById("logout-link");
+
+        // Add a click event listener to the logout button
+        logoutButton.addEventListener("click", function () {
+          // Reload the page after a short delay
+          setTimeout(function () {
+            location.reload();
+          }, 1000); // Reload after 1 second (1000 milliseconds)
+        });
+        var createCommunityButton = document.querySelector(
+          "[data-target='#createCommunityModal']"
+        );
+        createCommunityButton.addEventListener("click", function () {
+          $("#createCommunityModal").modal("show");
+        });
+      });
+      function joinCommunity(communityId) {
+        var formId = "#joinCommunityForm_" + communityId;
+        var csrfToken = "{{ csrf_token }}";
+
+        // Submit the form using JavaScript
+        $.ajax({
+          type: "POST",
+          url: $(formId).attr("action"),
+          data: {
+            community_id: communityId,
+            csrfmiddlewaretoken: csrfToken,
+            join_community: true,
+          },
+          success: function (data) {
+            // Display JavaScript alert on success
+            alert("Joined community successfully!");
+          },
+          error: function (error) {
+            console.error("Error joining community:", error);
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

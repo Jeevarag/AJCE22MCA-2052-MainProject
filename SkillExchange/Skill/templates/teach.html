@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-    <title>My Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Learners</title>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -60,7 +61,7 @@
         .profile-container {
             max-width: 800px;
             margin: 20px auto;
-            background-color: rgba(240, 245, 249, 0.5);
+            background-color: rgba(240, 245, 249, 0.9);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             padding: 20px;
@@ -68,12 +69,10 @@
         }
 
         .profile-picture {
-            width: 150px;
-            height: 150px;
             border-radius: 50%;
-            background-color: #80a4c2; /* You can replace this with an actual image URL */
-            background-size: cover;
-            background-position: left;
+            width: 50px; /* Adjust the width as needed */
+            height: 50px; /* Adjust the height as needed */
+            margin-right: 10px; /* Add some margin for spacing */
         }
 
         .btn {
@@ -89,6 +88,15 @@
 
         .btn:hover {
             background-color: #658da9;
+        }
+
+        .horizontal-line {
+            border-top: 1px solid #7c7c7c;
+            margin: 10px 0;
+        }
+
+        .profile-left {
+            width: 500px; /* Adjust the value as needed */
         }
     </style>
 </head>
@@ -108,8 +116,25 @@
                     <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
                 </div>
         </header>
-
+        
         <div class="profile-container">
+            <div class="profile-left">
+                <h2>Learners</h2>
+                <br>
+                <ul>
+                    {% for user in users %}
+                        <li>
+                            <div class="follower">
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'Images/profile.jpg' %}{% endif %}" alt="{{ user.username }}'s Profile Picture" class="profile-picture">
+                                <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
+                            </div>
+                            <div class="horizontal-line"></div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <!-- <div class="profile-container">
             <div class="profile-left">
             <h1>Learners</h1>
             <ul>
@@ -118,7 +143,7 @@
                 {% endfor %}
             </ul>
             </div>
-        </div>
+        </div> -->
     </div>
     
 

@@ -64,6 +64,25 @@
         border-right: 1px solid #ddd;
       }
 
+      #user-list a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        padding: 10px;
+      }
+
+      #user-list img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      .user-separator {
+        border-bottom: 1px solid #ddd;
+      }
+
       #message-container {
         flex: 2;
         overflow-y: auto;
@@ -71,13 +90,11 @@
       }
 
       #message-form {
-        width: calc(49% - 20px); /* Adjusted width calculation */
+        width: calc(49% - 20px);
         display: flex;
         align-items: center;
         padding: 10px;
         margin-left: 430px;
-        /* background-color: #f0f5f9; */
-        /* border-top: 1px solid #ddd; */
       }
 
       #message-form textarea {
@@ -111,18 +128,17 @@
         color: white;
         border-radius: 30px 30px 0 30px;
         margin-bottom: 10px;
-        margin-left: 290px;
+        margin-left: 300px;
         display: block;
         padding: 10px;
         width: fit-content;
         height: fit-content;
         border: 2px solid #80a4c2;
-        /* align-self: flex-end; Align to the right side */
       }
 
       .received {
         text-align: left;
-        background-color: #bddcf9;
+        background-color: #dbe9f6;
         color: #333;
         border-radius: 30px 30px 30px 0;
         margin-bottom: 10px;
@@ -130,13 +146,13 @@
         padding: 10px;
         width: fit-content;
         height: fit-content;
-        border: 2px solid #bddcf9;
-        align-self: flex-start; /* Align to the left side */
+        border: 2px solid #dbe9f6;
+        align-self: flex-start;
       }
 
       .sent span,
       .received span {
-        font-size: 12px; /* Adjust the size as needed */
+        font-size: 12px;
       }
 
       footer {
@@ -149,6 +165,7 @@
         text-align: center;
         padding: 10px 0;
       }
+
       .btn {
         display: inline-block;
         padding: 10px 20px;
@@ -160,8 +177,26 @@
         transition: background-color 0.3s;
       }
 
-      #h1{
+      #h1 {
         align-items: center;
+      }
+
+      #chat-header {
+        display: flex;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      #chat-header img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      #chat-header span {
+        font-weight: bold;
       }
     </style>
   </head>
@@ -188,33 +223,53 @@
     <div id="chat-container">
       <div id="user-list">
         {% for other_user in users %}
-          <a href="{% url 'chat' receiver_id=other_user.id %}" class="{% if other_user.id == selected_receiver_id %}selected{% endif %}">
-            <img src="{{ other_user.profile_picture.url }}" alt="{{ other_user.username }}" width="30" height="30" />
-            <span>{{ other_user.username }}</span>
-          </a>
+        <a
+          href="{% url 'chat' receiver_id=other_user.id %}"
+          class="{% if other_user.id == selected_receiver_id %}selected{% endif %}"
+        >
+          <img
+            src="{% if other_user.profile_picture %}{{ other_user.profile_picture.url }}{% else %}/static/Images/profile.jpg{% endif %}"
+            alt="{{ other_user.username }}"
+          />
+          <span>{{ other_user.username }}</span>
+        </a>
+        <div class="user-separator"></div>
         {% endfor %}
       </div>
-      
+
       <div id="message-container">
+        <div id="chat-header">
+          <img
+            src="{% if receiver.profile_picture %}{{ receiver.profile_picture.url }}{% else %}/static/Images/profile.jpg{% endif %}"
+            alt="{{ receiver.username }}"
+          />
+          <span>{{ receiver.username }}</span>
+        </div>
         {% if default_message %}
-          <p>{{ default_message }}</p>
-        {% else %}
-          {% for message in messages %}
-            <div class="{% if message.sender == user %}sent{% else %}received{% endif %}">
-              <p>{{ message.content }}</p>
-              <span>{{ message.timestamp }}</span>
-            </div>
-          {% endfor %}
-        {% endif %}
+        <p>{{ default_message }}</p>
+        {% else %} {% for message in messages %}
+        <div
+          class="{% if message.sender == user %}sent{% else %}received{% endif %}"
+        >
+          <p>{{ message.content }}</p>
+          <span>{{ message.timestamp }}</span>
+        </div>
+        {% endfor %} {% endif %}
       </div>
     </div>
 
     <!-- Form to send a new message -->
-    <form action="{% url 'send_message' %}" method="post" id="message-form">
+    <form
+      action="{% url 'send_message' %}"
+      method="post"
+      id="message-form"
+      onsubmit="return validateForm()"
+    >
       {% csrf_token %}
       <input type="hidden" name="receiver_id" value="{{ receiver.id }}" />
       <textarea
         name="content"
+        id="message-content"
         rows="1"
         placeholder="Type your message..."
       ></textarea>
@@ -224,6 +279,20 @@
     <footer>
       <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
+    <script>
+      function validateForm() {
+        var messageContent = document
+          .getElementById("message-content")
+          .value.trim();
+
+        if (messageContent === "") {
+          alert("Please enter a message.");
+          return false; // Prevent form submission
+        }
+
+        return true; // Allow form submission
+      }
+    </script>
     <script>
       // Function to refresh the page every 10 seconds
       setInterval(function () {

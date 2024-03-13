@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Teachers</title>
+    <title>Followers</title>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            /* background-color: #dbe9f6; */
+            background-image: url("{% static 'Images/collab.jpg' %}");
             margin: 0;
             padding: 0;
-            background-image: url("{% static 'Images/collab.jpg' %}"); /* Set your image path */
             background-size: cover;
             background-attachment: fixed;
+
         }
 
         header {
@@ -61,7 +61,7 @@
         .profile-container {
             max-width: 800px;
             margin: 20px auto;
-            background-color: rgba(240, 245, 249, 0.5);
+            background-color: #f0f5f9;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             padding: 20px;
@@ -89,14 +89,11 @@
         .btn:hover {
             background-color: #658da9;
         }
+        
 
         .horizontal-line {
-            border-top: 1px solid #7c7c7c;
+            border-top: 1px solid #ddd;
             margin: 10px 0;
-        }
-
-        .profile-left {
-            width: 500px; /* Adjust the value as needed */
         }
     </style>
 </head>
@@ -119,14 +116,14 @@
 
         <div class="profile-container">
             <div class="profile-left">
-                <h2>Teachers</h2>
+                <h2>Followers of {{ user.username }}</h2>
                 <br>
                 <ul>
-                    {% for user in users %}
+                    {% for follower in followers %}
                         <li>
                             <div class="follower">
-                                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'Images/profile.jpg' %}{% endif %}" alt="{{ user.username }}'s Profile Picture" class="profile-picture">
-                                <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
+                                <img src="{{ follower.follower.profile_picture.url }}" alt="{{ follower.follower.username }}'s Profile Picture" class="profile-picture">
+                                <a href="{% url 'profile' follower.follower.username %}">{{ follower.follower.username }}</a>
                             </div>
                             <div class="horizontal-line"></div>
                         </li>
@@ -157,3 +154,4 @@
     </script>
 </body>
 </html>
+        

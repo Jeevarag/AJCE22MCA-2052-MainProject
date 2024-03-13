@@ -5,12 +5,15 @@ from .models import UserSkill
 from .models import UserLocation
 from .models import Review
 from .models import SkillPointRequest
+from .models import PreferredSkill, Community
+from datetime import datetime
 
 
 class UserLocationForm(forms.ModelForm):
     class Meta:
         model = UserLocation
         fields = ('country', 'state', 'city')
+
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
@@ -20,15 +23,22 @@ class CustomUserChangeForm(UserChangeForm):
             'about_me',
         )
 
+
 class SkillForm(forms.ModelForm):
     class Meta:
         model = UserSkill
-        fields = ['name', 'description']
+        fields = ['category', 'name', 'description']
+
+class PreferredSkillsForm(forms.Form):
+    skill_categories = forms.MultipleChoiceField(
+        choices=UserSkill.SkillCategory.choices,
+        widget=forms.CheckboxSelectMultiple,
+    )
 
 
 class UserSearchForm(forms.Form):
     query = forms.CharField(label='Skill', max_length=100)
-    
+
 
 class SkillSessionForm(forms.Form):
     date_and_time = forms.DateTimeField(
@@ -41,7 +51,9 @@ class SkillSessionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set the minimum value for the date_and_time field to the current date and time
-        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime(
+            '%Y-%m-%dT%H:%M')
+
 
 class ReviewForm(forms.ModelForm):
     class Meta:
@@ -65,4 +77,10 @@ class CollabSessionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(CollabSessionForm, self).__init__(*args, **kwargs)
         # Set the min attribute to the current datetime
-        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+        self.fields['date_and_time'].widget.attrs['min'] = datetime.now().strftime(
+            '%Y-%m-%dT%H:%M')
+
+class CreateCommunityForm(forms.ModelForm):
+    class Meta:
+        model = Community
+        fields = ['name', 'description', 'profile_picture']

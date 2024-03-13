@@ -6,9 +6,9 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -50,10 +50,12 @@ def home(request):
 
 
 def mark_as_read(request, notification_id):
-    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user, is_read=False)
+    notification = get_object_or_404(
+        Notification, id=notification_id, recipient=request.user, is_read=False)
     notification.is_read = True
     notification.save()
     return redirect('home')
+
 
 def clear_all_notifications(request):
     if request.method == 'POST':
@@ -68,7 +70,6 @@ def get_notification_status(request):
     has_new_notifications = notifications.exists()
 
     return JsonResponse({'hasNewNotifications': has_new_notifications})
-
 
 
 def register(request):
@@ -170,6 +171,20 @@ def follow_user(request):
     return render(request, 'profile.html', data)
 
 
+@login_required
+def view_followers(request, user_id):
+    user = CustomUser.objects.get(id=user_id)
+    followers = Follower.objects.filter(following=user, is_following=True)
+    return render(request, 'followers.html', {'user': user, 'followers': followers})
+
+
+@login_required
+def view_following(request, user_id):
+    user = CustomUser.objects.get(id=user_id)
+    following = Follower.objects.filter(follower=user, is_following=True)
+    return render(request, 'following.html', {'user': user, 'following': following})
+
+
 @login_required(login_url='login')
 @never_cache
 def edit_profile(request):
@@ -222,12 +237,14 @@ def view_profile(request):
     if request.user.is_authenticated:
         is_following = Follower.objects.filter(
             follower=request.user, following=user_profile).exists()
+
     return render(request, 'profile.html', {
         'user_profile': user_profile,
-        'user_skills': user_profile.skills.all(),
+        'user_skills': user_skills,
         'user_location': user_location,
         'is_following': is_following,
         'received_reviews': received_reviews,
+        # 'skill_categories': skill_categories,
     })
 
 
@@ -279,18 +296,33 @@ def add_skill(request):
         skill_form = SkillForm(request.POST)
         if skill_form.is_valid():
             skill = skill_form.save(commit=False)
-            skill.user = request.user  # Link the skill to the authenticated user
+            skill.user = request.user
             skill.save()
-            # Redirect to the profile page after adding the skill
             return redirect('profile')
     else:
         skill_form = SkillForm()
 
-    context = {
-        'skill_form': skill_form
-    }
-
+    context = {'skill_form': skill_form}
     return render(request, 'add_skill.html', context)
+
+
+def select_preferred_skills(request):
+    if request.method == 'POST':
+        form = PreferredSkillsForm(request.POST)
+
+        if form.is_valid():
+            # Clear existing preferred skills for the user
+            request.user.preferred_skills.all().delete()
+
+            # Save the selected skills
+            for skill in form.cleaned_data['skill_categories']:
+                PreferredSkill.objects.create(user=request.user, skill=skill)
+
+            return redirect('profile')
+    else:
+        form = PreferredSkillsForm()
+
+    return render(request, 'preferred_skills.html', {'form': form})
 
 
 def search_users(request):
@@ -399,7 +431,8 @@ def accept_skill_request(request, request_id):
 
         Notification.objects.create(
             recipient=skill_request.sender,
-            message=f"Your skill request has been accepted by {request.user.username}."
+            message=f"Your skill request has been accepted by {
+                request.user.username}."
         )
 
         # Redirect to a form for scheduling the session
@@ -415,7 +448,8 @@ def reject_skill_request(request, request_id):
 
         Notification.objects.create(
             recipient=skill_request.sender,
-            message=f"Your skill request has been rejected by {request.user.username}."
+            message=f"Your skill request has been rejected by {
+                request.user.username}."
         )
         # Redirect to a success page or user profile
         return redirect('profile', username=request.user.username)
@@ -432,7 +466,7 @@ def send_collab_request(request, receiver_id):
             recipient=receiver,
             message=f"New Collaboration request from {request.user.username}."
         )
-        
+
         # Redirect to a success page or user profile
         return redirect('profile', username=receiver.username)
 
@@ -446,7 +480,8 @@ def accept_collab_request(request, request_id):
 
         Notification.objects.create(
             recipient=skill_request.sender,
-            message=f"Your Collab request has been rejected by {request.user.username}."
+            message=f"Your Collab request has been rejected by {
+                request.user.username}."
         )
         # Redirect to a form for scheduling the session
         return redirect('schedule_collab', request_id=collab_request.id)
@@ -461,7 +496,8 @@ def reject_collab_request(request, request_id):
 
         Notification.objects.create(
             recipient=skill_request.sender,
-            message=f"Your Collab request has been rejected by {request.user.username}."
+            message=f"Your Collab request has been rejected by {
+                request.user.username}."
         )
         # Redirect to a success page or user profile
         return redirect('profile', username=request.user.username)
@@ -497,7 +533,8 @@ def schedule_collab(request, request_id):
 
             Notification.objects.create(
                 recipient=collab_request.sender,
-                message=f"Collab scheduled with {request.user.username} on {date_and_time}."
+                message=f"Collab scheduled with {
+                    request.user.username} on {date_and_time}."
             )
 
             messages.success(request, 'Collab session scheduled successfully!')
@@ -885,4 +922,58 @@ def send_message(request):
     return redirect('chat', receiver_id=receiver_id)
 
 
+def community_home(request):
+    create_community_form = CreateCommunityForm()
 
+    if request.method == 'POST':
+        if 'create_community' in request.POST:
+            create_community_form = CreateCommunityForm(
+                request.POST, request.FILES)
+            if create_community_form.is_valid():
+                community = create_community_form.save(commit=False)
+                community.leader = request.user
+                community.save()
+                # Reset the form after successful submission
+                create_community_form = CreateCommunityForm()
+        elif 'join_community' in request.POST:
+            # Handle joining community logic here
+            community_id = request.POST.get('community_id')
+            community_to_join = Community.objects.get(id=community_id)
+            community_to_join.members.add(request.user)
+            community_to_join.save()
+            # Add an alert message to inform the user
+            messages.success(request, 'Joined community successfully!')
+
+    communities_created = Community.objects.filter(leader=request.user)
+    communities_joined = request.user.joined_communities.all()
+    communities_available = Community.objects.exclude(
+        leader=request.user).exclude(members=request.user)
+
+    return render(request, 'community_home.html', {
+        'create_community_form': create_community_form,
+        'communities_created': communities_created,
+        'communities_joined': communities_joined,
+        'communities_available': communities_available,
+    })
+
+
+def community_page(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    # Add any additional context data you want to pass to the template
+    return render(request, 'community_page.html', {'community': community})
+
+
+def leave_community(request, community_id):
+    try:
+        community = Community.objects.get(id=community_id)
+        # Check if the user is a member of the community
+        if request.user in community.members.all():
+            # Remove the user from the community
+            community.members.remove(request.user)
+            messages.success(request, 'You have successfully left the community.')
+        else:
+            messages.warning(request, f'You are not a member of the {community.name} community.')
+    except Community.DoesNotExist:
+        messages.error(request, 'Community not found.')
+
+    return redirect('community_home')

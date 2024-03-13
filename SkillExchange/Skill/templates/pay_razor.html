@@ -81,6 +81,21 @@
         .center form {
             display: inline-block;
         }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #80a4c2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #658da9;
+        }
     </style>
 </head>
 
@@ -96,7 +111,7 @@
         </nav>
         <div class="user-info">
             <p>Hello, {{ user.username }}!</p>
-            <button class="btn btn-primary"><a href="{% url 'logout' %}" id="logout-link">Logout</a></button>
+            <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
         </div>
     </header>
 
