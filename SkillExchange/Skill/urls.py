@@ -91,6 +91,9 @@ urlpatterns = [
     path('get_notification_status/', views.get_notification_status,
          name='get_notification_status'),
     path('community_home/', views.community_home, name='community_home'),
+    path('create_community/', views.create_community, name='create_community'),
     path('community_page/<int:community_id>/',views.community_page, name='community_page'),
+    path('community_page/<int:community_id>/upload/', views.resource_upload, name='resource_upload'),
+    path('community/<int:community_id>/chat/', views.community_chat, name='community_chat'),
     path('leave_community/<int:community_id>/', views.leave_community, name='leave_community'),
 ]

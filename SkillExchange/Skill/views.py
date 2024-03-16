@@ -6,9 +6,9 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community, Resource, CommunityChatMessage
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm, ResourceUploadForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -29,6 +29,7 @@ import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
+from django.conf import settings
 from django.views.decorators.cache import never_cache
 from django.db.models import Max
 
@@ -479,7 +480,7 @@ def accept_collab_request(request, request_id):
         collab_request.save()
 
         Notification.objects.create(
-            recipient=skill_request.sender,
+            recipient=collab_request.sender,
             message=f"Your Collab request has been rejected by {
                 request.user.username}."
         )
@@ -495,7 +496,7 @@ def reject_collab_request(request, request_id):
         collab_request.save()
 
         Notification.objects.create(
-            recipient=skill_request.sender,
+            recipient=collab_request.sender,
             message=f"Your Collab request has been rejected by {
                 request.user.username}."
         )
@@ -923,27 +924,19 @@ def send_message(request):
 
 
 def community_home(request):
+    if request.method == 'POST' and 'join_community' in request.POST:
+        # Handle joining community logic here
+        community_id = request.POST.get('community_id')
+        community_to_join = Community.objects.get(id=community_id)
+        community_to_join.members.add(request.user)
+        community_to_join.save()
+        # Add the leader as a member if not already a member
+        if request.user != community_to_join.leader:
+            community_to_join.members.add(community_to_join.leader)
+        # Add an alert message to inform the user
+        messages.success(request, 'Joined community successfully!')
+
     create_community_form = CreateCommunityForm()
-
-    if request.method == 'POST':
-        if 'create_community' in request.POST:
-            create_community_form = CreateCommunityForm(
-                request.POST, request.FILES)
-            if create_community_form.is_valid():
-                community = create_community_form.save(commit=False)
-                community.leader = request.user
-                community.save()
-                # Reset the form after successful submission
-                create_community_form = CreateCommunityForm()
-        elif 'join_community' in request.POST:
-            # Handle joining community logic here
-            community_id = request.POST.get('community_id')
-            community_to_join = Community.objects.get(id=community_id)
-            community_to_join.members.add(request.user)
-            community_to_join.save()
-            # Add an alert message to inform the user
-            messages.success(request, 'Joined community successfully!')
-
     communities_created = Community.objects.filter(leader=request.user)
     communities_joined = request.user.joined_communities.all()
     communities_available = Community.objects.exclude(
@@ -957,10 +950,33 @@ def community_home(request):
     })
 
 
+def create_community(request):
+    if request.method == 'POST':
+        form = CreateCommunityForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the form data to create a new community
+            community = form.save(commit=False)
+            # Assuming you have a 'leader' field in your Community model
+            community.leader = request.user
+            community.save()
+            # Add the leader as a member of the community
+            community.members.add(request.user)
+            # Optionally, you can redirect to a different page after successful creation
+            # Redirect to the home page or any other page
+            return redirect('community_home')
+    else:
+        form = CreateCommunityForm()  # Create a new form instance if it's a GET request
+
+    return render(request, 'create_community.html', {'form': form})
+
+
 def community_page(request, community_id):
     community = get_object_or_404(Community, id=community_id)
+    members = community.members.all()
+    resources = Resource.objects.filter(community=community)
+    user = request.user
     # Add any additional context data you want to pass to the template
-    return render(request, 'community_page.html', {'community': community})
+    return render(request, 'community_page.html', {'community': community, 'members': members, 'resources': resources})
 
 
 def leave_community(request, community_id):
@@ -970,10 +986,55 @@ def leave_community(request, community_id):
         if request.user in community.members.all():
             # Remove the user from the community
             community.members.remove(request.user)
-            messages.success(request, 'You have successfully left the community.')
+            messages.success(
+                request, 'You have successfully left the community.')
+
+            # Check if the user leaving is the leader
+            if request.user == community.leader:
+                # Delete the community if the leaving member is the leader
+                community.delete()
+                messages.success(
+                    request, 'The community has been deleted since the leader left.')
         else:
-            messages.warning(request, f'You are not a member of the {community.name} community.')
+            messages.warning(request, f'You are not a member of the {
+                             community.name} community.')
     except Community.DoesNotExist:
         messages.error(request, 'Community not found.')
 
     return redirect('community_home')
+
+
+def resource_upload(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if request.method == 'POST':
+        form = ResourceUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            resource = form.save(commit=False)
+            resource.user = request.user
+            resource.community = community
+            resource.save()
+            return redirect('resource_upload', community_id=community_id)
+    else:
+        form = ResourceUploadForm()
+
+    return render(request, 'resource_upload.html', {'form': form, 'community': community, 'MEDIA_URL': settings.MEDIA_URL})
+
+
+from django.contrib import messages
+
+@login_required
+def community_chat(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    messages_qs = CommunityChatMessage.objects.filter(community=community).order_by('timestamp')
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            message = CommunityChatMessage.objects.create(sender=request.user, community=community, content=content)
+            messages.success(request, 'Message sent successfully!')
+            return redirect('community_chat', community_id=community.id)
+        else:
+            messages.error(request, 'Failed to send message. Please try again.')
+
+    return render(request, 'forum_chat.html', {'community': community, 'messages': messages_qs})

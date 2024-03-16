@@ -229,9 +229,38 @@ class Message(models.Model):
 class Community(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    leader = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='led_community', null=True, blank=True)
-    members = models.ManyToManyField(CustomUser, related_name='joined_communities')
-    profile_picture = models.ImageField(upload_to='community_profile_pictures/', null=True, blank=True)
+    leader = models.OneToOneField(
+        CustomUser, on_delete=models.CASCADE, related_name='led_community', null=True, blank=True)
+    members = models.ManyToManyField(
+        CustomUser, related_name='joined_communities')
+    profile_picture = models.ImageField(
+        upload_to='community_profile_pictures/', null=True, blank=True)
 
     def __str__(self):
         return self.name
+
+
+class Resource(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    community = models.ForeignKey(
+        Community, on_delete=models.CASCADE, blank=True, null=True)
+    file = models.FileField(upload_to='resources/')
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    def get_file_url(self):
+        return self.file.url
+
+
+class CommunityChatMessage(models.Model):
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_community_messages')
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='community_chat_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Message from {self.sender.username} in {self.community.name}"

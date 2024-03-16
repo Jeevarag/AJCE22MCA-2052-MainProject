@@ -134,6 +134,85 @@
         right: 20px; /* Adjust based on the desired spacing from the main content */
         /*overflow-y: auto; /* Enable vertical scrolling if content exceeds container height */
       }
+
+      /* Chat styling */
+      #chat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        overflow: hidden;
+      }
+
+      .message {
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 70%;
+      }
+
+      .sent {
+        align-self: flex-end;
+        background-color: #80a4c2;
+        color: white;
+      }
+      
+      .received {
+        align-self: flex-start;
+        background-color: #dbe9f6;
+        color: #333;
+      }
+
+      .message-sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .message-content {
+        margin-bottom: 5px;
+      }
+
+      .message-timestamp {
+        font-size: 12px;
+      }
+
+      /* Form styling */
+      #message-form {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 800px;
+        margin-top: 20px;
+        margin-left: 300px;
+      }
+
+      #message-form textarea {
+        flex: 1;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical;
+      }
+
+      #message-form button {
+        background-color: #80a4c2;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+
+      #message-form button:hover {
+        background-color: #658da9;
+      }
     </style>
   </head>
   <body>
@@ -158,10 +237,22 @@
     <div class="container">
       <div class="sidebar">
         <ul>
-          <li><a href="{% url 'community_page' community_id=community.id %}">About</a></li>
+          <li>
+            <a href="{% url 'community_page' community_id=community.id %}"
+              >About</a
+            >
+          </li>
           <li><a href="#activities">Activities</a></li>
-          <li><a href="{% url 'resource_upload' community_id=community.id %}">Resources</a></li>
-          <li><a href="{% url 'community_chat' community_id=community.id %}">Forum</a></li>
+          <li>
+            <a href="{% url 'resource_upload' community_id=community.id %}"
+              >Resources</a
+            >
+          </li>
+          <li>
+            <a href="{% url 'community_chat' community_id=community.id %}"
+              >Forum</a
+            >
+          </li>
           <li><a href="#events">Events</a></li>
           <li>
             <a
@@ -173,26 +264,37 @@
         </ul>
       </div>
       <div class="main-content">
-        <!-- Main content here -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">{{ community.name }}</h2>
-          </div>
-          <div class="card-content">
-            <p>{{ community.description }}</p>
+        <!-- Chat section -->
+        <div id="chat-container">
+          <div id="message-container">
+            <!-- Messages will be displayed here -->
+            {% for message in messages %}
+            <div
+              class="message {% if message.sender == user %}sent{% else %}received{% endif %}"
+            >
+              <span class="message-sender">{{ message.sender.username }}:</span>
+              <span class="message-content">{{ message.content }}</span>
+              <!-- <span class="message-timestamp">{{ message.timestamp }}</span> -->
+            </div>
+            {% endfor %}
           </div>
         </div>
+        <!-- Form to send a new message -->
+        <form
+          action="{% url 'community_chat' community_id=community.id %}"
+          method="post"
+          id="message-form"
+        >
+          {% csrf_token %}
+          <textarea
+            name="content"
+            rows="3"
+            placeholder="Type your message..."
+          ></textarea>
+          <button type="submit">Send</button>
+        </form>
       </div>
-      <div class="members-container">
-        <!-- Members content -->
-        <h3>Members of {{ community.name }}</h3>
-            <ul>
-                {% for member in members %}
-                    <li>{{ member.username }}</li>
-                {% endfor %}
-            </ul>
     </div>
-
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // Find the logout button by its ID

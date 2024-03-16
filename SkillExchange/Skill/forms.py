@@ -4,7 +4,7 @@ from .models import CustomUser
 from .models import UserSkill
 from .models import UserLocation
 from .models import Review
-from .models import SkillPointRequest
+from .models import SkillPointRequest, Resource
 from .models import PreferredSkill, Community
 from datetime import datetime
 
@@ -84,3 +84,9 @@ class CreateCommunityForm(forms.ModelForm):
     class Meta:
         model = Community
         fields = ['name', 'description', 'profile_picture']
+
+
+class ResourceUploadForm(forms.ModelForm):
+    class Meta:
+        model = Resource
+        fields = ['file', 'name', 'description']

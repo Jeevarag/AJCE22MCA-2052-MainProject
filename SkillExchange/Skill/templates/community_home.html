@@ -195,90 +195,37 @@
       </div>
     </header>
 
-    <div class="container-fluid">
+    <<div class="container-fluid">
       <div class="row">
         <!-- Container 1: Joined Communities -->
-        <div class="col-md-4 communities-container">
+        <div class="col-md-6 communities-container">
           <h2>Communities You Joined</h2>
           <ul class="community-list">
             {% for community in communities_joined %}
-            <li><a href="{% url 'community_page' community.id %}">{{ community.name }}</a></li>
+            <li>
+              <a href="{% url 'community_page' community.id %}">{{ community.name }}</a>
+            </li>
             <!-- Add other community details as needed -->
             {% endfor %}
           </ul>
-        </div>
-
-        <!-- Container 2: Create Community Button -->
-        <div class="col-md-4 create-community-btn-container">
-          <button
-            class="btn btn-primary"
-            data-toggle="modal"
-            data-target="#createCommunityModal"
-          >
-            Create Community
-          </button>
-        </div>
-        <div
-          class="modal"
-          id="createCommunityModal"
-          tabindex="-1"
-          role="dialog"
-        >
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Create a Community</h5>
-                <button
-                  type="button"
-                  class="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <form method="post" action="{% url 'community_home' %}">
-                  {% csrf_token %} {{ create_community_form.as_p }}
-                  <button
-                    type="submit"
-                    name="create_community"
-                    class="btn btn-primary"
-                  >
-                    Create Community
-                  </button>
-                </form>
-              </div>
-            </div>
+          <!-- Create Community button -->
+          <div class="create-community-btn-container">
+            <a href="{% url 'create_community' %}" class="btn btn-primary">Create Community</a>
           </div>
         </div>
 
-        <!-- Container 3: Available Communities -->
-        <div class="col-md-4 available-communities-container">
+        <!-- Container 2: Available Communities -->
+        <div class="col-md-6 available-communities-container">
           <h2>Communities Available to Join</h2>
           <ul class="available-community-list">
             {% for community in communities_available %}
             <li>
               <h3>{{ community.name }}</h3>
               <p>{{ community.description }}</p>
-              <form
-                id="joinCommunityForm_{{ community.id }}"
-                method="post"
-                action="{% url 'community_home' %}"
-              >
+              <form id="joinCommunityForm_{{ community.id }}" method="post" action="{% url 'community_home' %}">
                 {% csrf_token %}
-                <input
-                  type="hidden"
-                  name="community_id"
-                  value="{{ community.id }}"
-                />
-                <button
-                  type="button"
-                  onclick="joinCommunity('{{ community.id }}')"
-                  class="btn btn-primary"
-                >
-                  Join Community
-                </button>
+                <input type="hidden" name="community_id" value="{{ community.id }}" />
+                <button type="button" onclick="joinCommunity('{{ community.id }}')" class="btn btn-primary">Join Community</button>
               </form>
             </li>
             {% endfor %}
