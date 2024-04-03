@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Event</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: #dbe9f6;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        padding-bottom: 50px;
+        min-height: 100vh;
+      }
+
+      header {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        animation: expandHeader 1s ease-out;
+      }
+
+      @keyframes expandHeader {
+        from {
+          height: 0;
+        }
+        to {
+          height: 80px;
+        }
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+      }
+
+      nav a {
+        text-decoration: none;
+        color: #5c5c5c;
+        margin: 0 20px;
+      }
+
+      footer {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        text-align: center;
+        padding: 10px 0;
+      }
+
+      .container {
+        margin-top: 20px;
+      }
+
+      .form-container {
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SkillSwap Communities</h1>
+      <nav>
+        <ul>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'profile' %}">My profile</a></li>
+        </ul>
+      </nav>
+      <div class="user-info">
+        <p>Hello, {{ user.username }}</p>
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link"
+          >Logout</a
+        >
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="form-container">
+        <h2>Create Event</h2>
+        <form
+          method="post"
+          action="{% url 'create_event' community_id=community.id %}"
+        >
+          {% csrf_token %} {{ form.as_p }}
+          <button type="submit" class="btn btn-primary">Create Event</button>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+    </footer>
+  </body>
+</html>

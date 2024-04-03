@@ -253,7 +253,7 @@
               >Forum</a
             >
           </li>
-          <li><a href="#events">Events</a></li>
+          <li><a href="{% url 'community_events' community_id=community.id %}">Community Events</a></li>
           <li>
             <a
               href="{% url 'leave_community' community.id %}"

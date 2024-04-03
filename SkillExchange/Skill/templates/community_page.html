@@ -162,7 +162,7 @@
           <li><a href="#activities">Activities</a></li>
           <li><a href="{% url 'resource_upload' community_id=community.id %}">Resources</a></li>
           <li><a href="{% url 'community_chat' community_id=community.id %}">Forum</a></li>
-          <li><a href="#events">Events</a></li>
+          <li><a href="{% url 'community_events' community_id=community.id %}">Community Events</a></li>
           <li>
             <a
               href="{% url 'leave_community' community.id %}"

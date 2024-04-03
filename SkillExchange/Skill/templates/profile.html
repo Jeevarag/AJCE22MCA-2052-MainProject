@@ -342,7 +342,7 @@
                 <a id="skill_add" href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
                 <div class="horizontal-line"></div>
                 <p>What to learn?</p>
-                <a id="skill_add" href=""><button class="add-skill-button">Set Preferences</button></a>
+                <a id="skill_add" href="{% url 'select_preferred_skills' %}"><button class="add-skill-button">Set Preferences</button></a>
             {% else %}
                 <form method="post" action="{% url 'send_skill_request' user.id %}">
                     {% csrf_token %}

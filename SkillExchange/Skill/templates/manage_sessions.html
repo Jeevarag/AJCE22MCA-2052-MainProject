@@ -96,6 +96,8 @@
                 {% csrf_token %}
                 <button type="submit" name="mark_attended" class="btn btn-mark-attended">Mark Attended</button>
             </form>
+            <a href="{% url 'video_call' %}"><button class="btn btn-primary">Start video call</button></a>
+            <a href="{% url 'join_call' %}"><button class="btn btn-primary">Join call</button></a>
         {% endblock %}
     </div>
 

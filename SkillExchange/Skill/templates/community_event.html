@@ -8,9 +8,10 @@
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <style>
       body {
         font-family: "Montserrat", sans-serif;
@@ -32,7 +33,6 @@
         position: fixed;
         top: 0;
         left: 0;
-        height: 100px;
         width: 100%;
         z-index: 1000; /* Ensure the header stays above other elements */
       }
@@ -139,42 +139,22 @@
         /*overflow-y: auto; /* Enable vertical scrolling if content exceeds container height */
       }
 
-      .container {
-        margin-top: 50px;
+      .modal {
+        position: fixed; /* Ensure the modal is positioned correctly */
+        z-index: 1500;
       }
 
-      .file-container {
-        margin-top: 20px;
-      }
-
-      /* Adjustments */
-      .upload-button {
-        margin-bottom: 10px;
-      }
-
-      .user-info {
-        display: flex;
-        align-items: center;
-      }
-
-      .profile-picture {
-        width: 40px; /* Adjust the size as needed */
-        height: 40px; /* Adjust the size as needed */
-        margin-right: 10px;
-      }
-
-      .username {
-        margin: 0;
-      }
-
-      /* Rounded profile picture */
-      .rounded-circle {
-        border-radius: 50%;
-      }
-
-      .horizontal-line {
-        border-top: 1px solid #7c7c7c;
-        margin: 10px 0;
+      /* Modified styles */
+      .btn-host-event {
+            padding: 5px 10px; /* Adjust padding to reduce button size */
+            font-size: 14px; /* Adjust font size */
+            width: auto; /* Set width to auto or specify a specific width */
+        }
+      .event {
+        border: 1px solid #ccc; /* Border for event container */
+        border-radius: 8px; /* Rounded corners */
+        padding: 10px; /* Padding */
+        margin-bottom: 10px; /* Spacing between events */
       }
     </style>
   </head>
@@ -200,17 +180,9 @@
     <div class="container">
       <div class="sidebar">
         <ul>
-          <li>
-            <a href="{% url 'community_page' community_id=community.id %}"
-              >About</a
-            >
-          </li>
+          <li><a href="{% url 'community_page' community_id=community.id %}">About</a></li>
           <li><a href="#activities">Activities</a></li>
-          <li>
-            <a href="{% url 'resource_upload' community_id=community.id %}"
-              >Resources</a
-            >
-          </li>
+          <li><a href="{% url 'resource_upload' community_id=community.id %}">Resources</a></li>
           <li><a href="{% url 'community_chat' community_id=community.id %}">Forum</a></li>
           <li><a href="{% url 'community_events' community_id=community.id %}">Community Events</a></li>
           <li>
@@ -223,90 +195,52 @@
         </ul>
       </div>
       <div class="main-content">
-        <h2>Upload Resource</h2>
-        <button
-          type="button"
-          class="btn btn-primary upload-button"
-          data-toggle="modal"
-          data-target="#resourceUploadModal"
-        >
-          Upload
-        </button>
-        <div class="file-container">
-          <h2>Uploaded Files</h2>
-          {% for resource in community.resource_set.all %}
-          <div class="card">
-            <div class="card-body">
-              <div class="user-info">
-                <img
-                  src="{{ resource.user.profile_picture.url }}"
-                  alt="{{ resource.user.username }}'s Profile Picture"
-                  class="profile-picture rounded-circle"
-                />
-                <p class="username">{{ resource.user.username }}</p>
-              </div>
-              <div class="horizontal-line"></div>
-              <h7 class="card-title">{{ resource.name }}</h7>
-              <p class="card-text">{{ resource.description }}</p>
-              <a href="{{ resource.file.url }}" class="btn btn-primary" download
-                >Download</a
-              >
+        <!-- Main content here -->
+        <div class="card">
+          <h1>{{ community.name }} Events</h1>
+          {% if is_leader %}
+          <!-- Button to trigger the modal -->
+          <a href="{% url 'create_event' community_id=community.id %}" class="btn btn-primary btn-host-event">Host an Event</a>
+          {% else %}
+          <p>Only leaders can start an event.</p>
+          {% endif %}
+          {% if events %}
+          <h2>Events:</h2>
+          <div class="event-details">
+            {% for event in events %}
+            <div class="event">
+              <h3>{{ event.name }}</h3>
+              <p><strong>Date:</strong> {{ event.timestamp.date }}</p>
+              <p><strong>Time:</strong> {{ event.timestamp.time }}</p>
+              <p><strong>Description:</strong> {{ event.description }}</p>
+              <p><strong>Address:</strong> {{ event.address }}</p>
             </div>
+            {% endfor %}
           </div>
-          {% empty %}
-          <p>No files uploaded yet.</p>
-          {% endfor %}
+          {% else %}
+          <p>No events found.</p>
+          {% endif %}
         </div>
       </div>
-    </div>
 
-    <!-- Resource Upload Modal -->
-    <div
-      class="modal fade"
-      id="resourceUploadModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="resourceUploadModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="resourceUploadModalLabel">
-              Upload Resource
-            </h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <form method="post" enctype="multipart/form-data">
-              {% csrf_token %} {{ form.as_p }}
-              <button type="submit" class="btn btn-primary">Upload</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          // Find the logout button by its ID
+          var logoutButton = document.getElementById("logout-link");
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Find the logout button by its ID
-        var logoutButton = document.getElementById("logout-link");
-
-        // Add a click event listener to the logout button
-        logoutButton.addEventListener("click", function () {
-          // Reload the page after a short delay
-          setTimeout(function () {
-            location.reload();
-          }, 1000); // Reload after 1 second (1000 milliseconds)
+          // Add a click event listener to the logout button
+          logoutButton.addEventListener("click", function () {
+            // Reload the page after a short delay
+            setTimeout(function () {
+              location.reload();
+            }, 1000); // Reload after 1 second (1000 milliseconds)
+          });
         });
-      });
-    </script>
+        $(document).ready(function() {
+          $('#createEventModal').on('shown.bs.modal', function () {
+              $(this).find('form').trigger('reset');
+          });
+        });
+      </script>
   </body>
 </html>

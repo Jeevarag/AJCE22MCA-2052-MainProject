@@ -2,110 +2,130 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Select Skill Points</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Add Bootstrap CSS link here if not already included -->
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #dbe9f6;
-            margin: 0;
-            padding: 0;
-            position: relative;
-            padding-bottom: 50px; /* Adjust as needed to avoid overlap with fixed footer */
-            min-height: 100vh;
-        }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: #dbe9f6;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        padding-bottom: 50px; /* Adjust as needed to avoid overlap with fixed footer */
+        min-height: 100vh;
+      }
 
-        header {
-            background-color: #f0f5f9;
-            color: #5c5c5c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-        }
+      header {
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+      }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            align-items: center;
-        }
+      nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+      }
 
-        nav a {
-            text-decoration: none;
-            color: #5c5c5c;
-            margin: 0 20px;
-        }
+      nav a {
+        text-decoration: none;
+        color: #5c5c5c;
+        margin: 0 20px;
+      }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
+      .user-info {
+        display: flex;
+        align-items: center;
+      }
 
-        .user-info p {
-            margin-right: 10px;
-        }
+      .user-info p {
+        margin-right: 10px;
+      }
 
-        footer {
-            position: absolute;
-            width: 100%;
-            bottom: 0;
-            left: 0;
-            background-color: #f0f5f9;
-            color: #5c5c5c;
-            text-align: center;
-            padding: 10px 0;
-        }
+      footer {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        background-color: #f0f5f9;
+        color: #5c5c5c;
+        text-align: center;
+        padding: 10px 0;
+      }
 
-        .action-container {
-            background-size: cover;
-            background-image: url("{% static 'Images/skillpoint.jpg' %}");
-            text-align: center;
-            padding: 50px 0;
-            color: #5c5c5c;
-            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            margin-bottom: 50px;
-            margin-left: 470px;
-            margin-right: 40px;
-            margin-top: 40px;
-            border-radius: 20px;
-            min-height: 500px;
-            width: 700px;
-            display: inline-block;
-        }
+      .action-container {
+        background-size: cover;
+        background-image: url("{% static 'Images/skillpoint.jpg' %}");
+        text-align: center;
+        padding: 50px 0;
+        color: #5c5c5c;
+        transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        margin-bottom: 50px;
+        margin-left: 470px;
+        margin-right: 40px;
+        margin-top: 40px;
+        border-radius: 20px;
+        min-height: 500px;
+        width: 700px;
+        display: inline-block;
+      }
 
-        .action-container:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
+      .action-container:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'about_us' %}">About</a></li>
-                <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
-            </ul>
-        </nav>
-        <div class="user-info">
-            <p>Hello, {{ user.username }}!</p>
-            <button class="btn btn-primary"><a href="{% url 'logout' %}" id="logout-link">Logout</a></button>
-        </div>
+      <nav>
+        <ul>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'about_us' %}">About</a></li>
+          <li><a id="my_profile" href="{% url 'profile' %}">My profile</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+          <li>Available Skill Points: {{ skill_points.available_points }}</li>
+        </ul>
+      </nav>
+      <div class="user-info">
+        <p>Hello, {{ user.username }}</p>
+        <a href="{% url 'logout' %}"
+          ><button class="btn btn-primary">Logout</button></a
+        >
+      </div>
     </header>
 
-        <a href="{% url 'pay_razor' %}" class="action-container" data-skill-points="300"><span>300 Skill Points</span></a>
+    <a
+      href="{% url 'pay_razor' %}"
+      class="action-container"
+      data-skill-points="300"
+      ><span>300 Skill Points</span></a
+    >
 
     <footer>
-        <p>&copy; 2023 SkillSwap. All rights reserved.</p>
+      <p>&copy; 2023 SkillSwap. All rights reserved.</p>
     </footer>
-</body>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
 </html>

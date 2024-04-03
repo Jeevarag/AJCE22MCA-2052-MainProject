@@ -780,6 +780,17 @@ def manage_session(request, session_id):
     return render(request, 'manage_sessions.html', {'skill_session': skill_session})
 
 
+def video_call(request):
+    return render(request, 'videocall.html')
+
+
+def join_call(request):
+    if request.method == 'POST':
+        roomID = request.POST['roomID']
+        return redirect("/video_chat_room?roomID=" + roomID)
+    return render(request, 'join_call.html')
+
+
 def session_schedule(request):
     # Fetch all skill sessions for the current user, regardless of status, and order by status
     skill_sessions = SkillSession.objects.filter(

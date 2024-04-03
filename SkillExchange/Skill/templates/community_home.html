@@ -195,7 +195,7 @@
       </div>
     </header>
 
-    <<div class="container-fluid">
+    <div class="container-fluid">
       <div class="row">
         <!-- Container 1: Joined Communities -->
         <div class="col-md-6 communities-container">
@@ -204,6 +204,27 @@
             {% for community in communities_joined %}
             <li>
               <a href="{% url 'community_page' community.id %}">{{ community.name }}</a>
+              <!-- Display upcoming events for this community -->
+              <div class="upcoming-events-container">
+                <h3>Upcoming Events</h3>
+                {% if community.upcoming_events %}
+                <ul class="event-list">
+                  {% for event in community.upcoming_events %}
+                  <li>
+                    <div class="event-details">
+                      <h4>{{ event.name }}</h4>
+                      <p><strong>Date:</strong> {{ event.timestamp.date }}</p>
+                      <p><strong>Time:</strong> {{ event.timestamp.time }}</p>
+                      <p><strong>Description:</strong> {{ event.description }}</p>
+                      <p><strong>Address:</strong> {{ event.address }}</p>
+                    </div>
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% else %}
+                <p>No upcoming events</p>
+                {% endif %}
+              </div>
             </li>
             <!-- Add other community details as needed -->
             {% endfor %}
@@ -222,10 +243,24 @@
             <li>
               <h3>{{ community.name }}</h3>
               <p>{{ community.description }}</p>
-              <form id="joinCommunityForm_{{ community.id }}" method="post" action="{% url 'community_home' %}">
+              <form
+                id="joinCommunityForm_{{ community.id }}"
+                method="post"
+                action="{% url 'community_home' %}"
+              >
                 {% csrf_token %}
-                <input type="hidden" name="community_id" value="{{ community.id }}" />
-                <button type="button" onclick="joinCommunity('{{ community.id }}')" class="btn btn-primary">Join Community</button>
+                <input
+                  type="hidden"
+                  name="community_id"
+                  value="{{ community.id }}"
+                />
+                <button
+                  type="button"
+                  onclick="joinCommunity('{{ community.id }}')"
+                  class="btn btn-primary"
+                >
+                  Join Community
+                </button>
               </form>
             </li>
             {% endfor %}
