@@ -264,3 +264,15 @@ class CommunityChatMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender.username} in {self.community.name}"
+
+
+class Event(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
+    venue = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(default=timezone.now)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name

@@ -3,11 +3,11 @@ from django.contrib.auth.forms import UserChangeForm
 from .models import CustomUser
 from .models import UserSkill
 from .models import UserLocation
-from .models import Review
+from .models import Review, Event
 from .models import SkillPointRequest, Resource
 from .models import PreferredSkill, Community
 from datetime import datetime
-
+from django.utils import timezone
 
 class UserLocationForm(forms.ModelForm):
     class Meta:
@@ -90,3 +90,12 @@ class ResourceUploadForm(forms.ModelForm):
     class Meta:
         model = Resource
         fields = ['file', 'name', 'description']
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'venue', 'address', 'timestamp']
+        widgets = {
+            'timestamp': forms.DateTimeInput(attrs={'min': timezone.now().strftime('%Y-%m-%dT%H:%M'), 'type': 'datetime-local'}),
+        }

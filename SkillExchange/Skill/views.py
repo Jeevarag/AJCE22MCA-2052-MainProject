@@ -6,9 +6,9 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community, Resource, CommunityChatMessage
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community, Resource, CommunityChatMessage, Event
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm, ResourceUploadForm
+from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm, ResourceUploadForm, EventForm
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib import messages
@@ -784,7 +784,7 @@ def video_call(request):
     return render(request, 'videocall.html')
 
 
-def join_call(request):
+def join_video(request):
     if request.method == 'POST':
         roomID = request.POST['roomID']
         return redirect("/video_chat_room?roomID=" + roomID)
@@ -953,6 +953,12 @@ def community_home(request):
     communities_available = Community.objects.exclude(
         leader=request.user).exclude(members=request.user)
 
+    # Fetch upcoming events for all communities
+    for community in communities_joined:
+        community.upcoming_events = Event.objects.filter(community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
+    for community in communities_available:
+        community.upcoming_events = Event.objects.filter(community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
+
     return render(request, 'community_home.html', {
         'create_community_form': create_community_form,
         'communities_created': communities_created,
@@ -1049,3 +1055,41 @@ def community_chat(request, community_id):
             messages.error(request, 'Failed to send message. Please try again.')
 
     return render(request, 'forum_chat.html', {'community': community, 'messages': messages_qs})
+
+
+def community_events(request, community_id):
+    community = Community.objects.get(id=community_id)
+    events = Event.objects.filter(community=community)
+    is_leader = community.leader == request.user  # Check if current user is leader
+
+    form = EventForm(request.POST or None)
+    if request.method == 'POST' and is_leader:
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.community = community
+            event.save()
+            return redirect('community_events', community_id=community.id)
+
+    context = {
+        'community': community,
+        'events': events,
+        'form': form,
+        'is_leader': is_leader,
+    }
+    return render(request, 'community_event.html', context)
+
+
+def create_event(request, community_id):
+    community = Community.objects.get(id=community_id)
+    form = EventForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.community = community
+            event.save()
+            return redirect('community_events', community_id=community.id)
+    context = {
+        'community': community,
+        'form': form,
+    }
+    return render(request, 'create_event.html', context)
