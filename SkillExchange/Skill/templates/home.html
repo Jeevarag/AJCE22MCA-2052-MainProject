@@ -324,9 +324,7 @@
         {% endif %}
         &nbsp;&nbsp;&nbsp;
         <p>{{ user.username }}</p>
-        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link"
-          >Logout</a
-        >
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout-link">Logout</a>
       </div>
     </header>
 
@@ -334,14 +332,10 @@
       <div class="hero-content">
         <h1>Welcome to SkillSwap</h1>
         <div class="action-containers">
-          <a
-            id="teach"
-            href="{% url 'learn' %}"
-            class="action-container learn-container"
-          >
+          <a id="teach" href="{% url 'learn' %}" class="action-container learn-container">
             <span>Learn</span>
           </a>
-          <a href="{% url 'teach' %}" class="action-container teach-container">
+          <a id="learn" href="{% url 'teach' %}" class="action-container teach-container">
             <span>Teach</span>
           </a>
         </div>

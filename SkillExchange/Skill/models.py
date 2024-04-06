@@ -12,6 +12,8 @@ class CustomUser(AbstractUser):
     profile_picture = models.ImageField(
         upload_to='profile_pictures/', null=True, blank=True)
     about_me = models.TextField(null=True, blank=True)
+    average_sentiment_score = models.FloatField(null=True, blank=True)
+    sentiment_title = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.username
@@ -128,6 +130,7 @@ class Review(models.Model):
     skill_session = models.ForeignKey(
         SkillSession, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
+    sentiment_score = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

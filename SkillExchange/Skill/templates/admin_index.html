@@ -154,12 +154,12 @@
                             {% if user.is_active %}
                                     <form method="post" action="{% url 'deactivate_user' user.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger">Deactivate</button>
+                                        <button type="submit" id="deactivate" class="btn btn-danger">Deactivate</button>
                                     </form>
                                 {% else %}
                                     <form method="post" action="{% url 'activate_user' user.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-success">Activate</button>
+                                        <button type="submit" id="activate" class="btn btn-success">Activate</button>
                                     </form>
                             {% endif %}
                         </td>

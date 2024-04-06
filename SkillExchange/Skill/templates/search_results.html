@@ -5,6 +5,7 @@
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <title>My Profile</title>
             <style>
                 body {
@@ -68,12 +69,10 @@
                 }
         
                 .profile-picture {
-                    width: 150px;
-                    height: 150px;
                     border-radius: 50%;
-                    background-color: #80a4c2; /* You can replace this with an actual image URL */
-                    background-size: cover;
-                    background-position: left;
+                    width: 50px; /* Adjust the width as needed */
+                    height: 50px; /* Adjust the height as needed */
+                    margin-right: 10px; 
                 }
 
                 .btn {
@@ -89,6 +88,20 @@
         
                 .btn:hover {
                     background-color: #658da9;
+                }
+
+                /* .users {
+                    display: flex;
+                    align-items: center;
+                } */
+
+                .sentiment-title {
+                    margin-left: 450px; /* Move sentiment title to the right */
+                }
+
+                .horizontal-line {
+                    border-top: 1px solid #7c7c7c;
+                    margin: 10px 0;
                 }
             </style>
         </head>
@@ -113,9 +126,16 @@
                     <div class="profile-left">
                     <h1>Search Results</h1>
                     <ul>
-                        {% for user in users_with_skill %}
-                            <li><a href="{% url 'profile' user.user.username %}">{{ user.user.username }}</a></li>
-                        {% endfor %}
+                        {% for user_with_skill in users_with_skill %}
+                    <li>
+                        <div class="users">
+                            <img src="{% if user_with_skill.user.profile_picture %}{{ user_with_skill.user.profile_picture.url }}{% else %}{% static 'Images/profile.jpg' %}{% endif %}" alt="{{ user_with_skill.user.username }}'s Profile Picture" class="profile-picture">
+                            <a href="{% url 'profile' user_with_skill.user.username %}">{{ user_with_skill.user.username }}</a>
+                            <span class="sentiment-title">({{ user_with_skill.user.sentiment_title }})</span>
+                        </div>
+                        <div class="horizontal-line"></div>
+                    </li>
+                    {% endfor %}
                     </ul>
                     </div>
                 </div>

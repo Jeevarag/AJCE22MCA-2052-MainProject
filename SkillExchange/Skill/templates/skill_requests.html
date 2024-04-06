@@ -135,7 +135,7 @@
                                 <td>
                                     <form method="post" action="{% url 'reject_skill_request' request.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-reject">Reject</button>
+                                        <button id="reject_req" type="submit" class="btn btn-reject">Reject</button>
                                     </form>
                                 </td>
                                 <td>

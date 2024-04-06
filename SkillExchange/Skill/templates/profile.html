@@ -304,7 +304,7 @@
                 <a href="{% url 'edit_profile' %}"><button class="edit-profile-button">Edit Profile</button></a>
             {% endif %}
             {% if user != request.user %}
-                <a href="{% url 'chat' receiver_id=user.id %}"><button class="edit-profile-button">Message</button></a>
+                <a id="message_user" href="{% url 'chat' receiver_id=user.id %}"><button class="edit-profile-button">Message</button></a>
             {% endif %}
             
         </div>
@@ -342,12 +342,12 @@
                 <a id="skill_add" href="{% url 'add_skill' %}"><button class="add-skill-button">Add Skill</button></a>
                 <div class="horizontal-line"></div>
                 <p>What to learn?</p>
-                <a id="skill_add" href="{% url 'select_preferred_skills' %}"><button class="add-skill-button">Set Preferences</button></a>
+                <a id="pref_skill" href="{% url 'select_preferred_skills' %}"><button class="add-skill-button">Set Preferences</button></a>
             {% else %}
                 <form method="post" action="{% url 'send_skill_request' user.id %}">
                     {% csrf_token %}
                     <input type="text" id="request_message" name="message" placeholder="Send a Skill Request" class="transparent-input" />
-                    <button type="submit" class="btn btn-primary">Send Request</button>
+                    <button id="send_request" type="submit" class="btn btn-primary">Send Request</button>
                 </form>
                 <br>
                 <br>

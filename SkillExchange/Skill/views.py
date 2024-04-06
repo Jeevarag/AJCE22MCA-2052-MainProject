@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community, Resource, CommunityChatMessage, Event
+from .models import CustomUser, UserSkill, UserLocation, Follower, SkillRequest, Notification, SkillSession, SkillPoints, SkillPointsTransactionHistory, SkillPointRequest, CollabRequest, CollabSession, Message, PreferredSkill, Community, Resource, CommunityChatMessage, Event, Review
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserChangeForm, UserLocationForm, SkillSessionForm, ReviewForm, SkillPointRequestForm, CollabSessionForm, SkillForm, PreferredSkillsForm, CreateCommunityForm, ResourceUploadForm, EventForm
 from django.http import JsonResponse
@@ -32,6 +32,9 @@ import logging
 from django.conf import settings
 from django.views.decorators.cache import never_cache
 from django.db.models import Max
+from django.db.models import Avg
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -814,24 +817,65 @@ def create_review(request, session_id):
         return redirect('profile')  # Adjust the redirect as needed
 
     if request.method == 'POST':
-        # Assuming you have a ReviewForm to handle the creation
         form = ReviewForm(request.POST)
 
         if form.is_valid():
-            # Create a new review instance and link it to the skill session
+            # Save the form data
             review = form.save(commit=False)
             review.sender = request.user
             review.receiver = skill_session.skill_request.receiver
             review.skill_session = skill_session
+            
+            # Perform sentiment analysis on the review text
+            sentiment_score = analyze_sentiment(review.text)
+            review.sentiment_score = sentiment_score
+            
             review.save()
+
+            # Update sentiment information for the user who received the review
+            update_user_sentiment(review.receiver)
+
             messages.success(request, 'Review posted successfully.')
             return redirect('profile')  # Adjust the redirect as needed
 
-            # Other logic, redirect, or render as needed
     else:
-        form = ReviewForm()  # Assuming you have a ReviewForm
+        form = ReviewForm()
 
     return render(request, 'create_review.html', {'form': form, 'skill_session': skill_session})
+
+
+def analyze_sentiment(text):
+    sia = SentimentIntensityAnalyzer()
+    sentiment_score = sia.polarity_scores(text)['compound']
+    return sentiment_score
+
+def update_user_sentiment(user):
+    # Calculate the average sentiment score for the user
+    reviews = Review.objects.filter(receiver=user)
+    if reviews.exists():
+        average_sentiment_score = reviews.aggregate(Avg('sentiment_score'))['sentiment_score__avg']
+        # Update sentiment score and title for the user
+        user.average_sentiment_score = average_sentiment_score
+        user.sentiment_title = assign_sentiment_title(average_sentiment_score)
+        user.save()
+    else:
+        # If there are no reviews, reset sentiment information
+        user.average_sentiment_score = None
+        user.sentiment_title = 'No Reviews Yet'
+        user.save()
+
+
+def assign_sentiment_title(sentiment_score):
+    if sentiment_score is None:
+        return 'No Reviews Yet'
+    elif sentiment_score > 0.7:
+        return 'Popular'
+    elif sentiment_score > 0.5:
+        return 'Good Choice'
+    elif sentiment_score > 0.3:
+        return 'Average'
+    else:
+        return 'Needs Improvement'
 
 
 def buy_skillpoints(request):
@@ -955,9 +999,11 @@ def community_home(request):
 
     # Fetch upcoming events for all communities
     for community in communities_joined:
-        community.upcoming_events = Event.objects.filter(community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
+        community.upcoming_events = Event.objects.filter(
+            community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
     for community in communities_available:
-        community.upcoming_events = Event.objects.filter(community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
+        community.upcoming_events = Event.objects.filter(
+            community=community, timestamp__gte=timezone.now()).order_by('timestamp')[:5]
 
     return render(request, 'community_home.html', {
         'create_community_form': create_community_form,
@@ -1038,21 +1084,22 @@ def resource_upload(request, community_id):
     return render(request, 'resource_upload.html', {'form': form, 'community': community, 'MEDIA_URL': settings.MEDIA_URL})
 
 
-from django.contrib import messages
-
 @login_required
 def community_chat(request, community_id):
     community = get_object_or_404(Community, id=community_id)
-    messages_qs = CommunityChatMessage.objects.filter(community=community).order_by('timestamp')
+    messages_qs = CommunityChatMessage.objects.filter(
+        community=community).order_by('timestamp')
 
     if request.method == 'POST':
         content = request.POST.get('content')
         if content:
-            message = CommunityChatMessage.objects.create(sender=request.user, community=community, content=content)
+            message = CommunityChatMessage.objects.create(
+                sender=request.user, community=community, content=content)
             messages.success(request, 'Message sent successfully!')
             return redirect('community_chat', community_id=community.id)
         else:
-            messages.error(request, 'Failed to send message. Please try again.')
+            messages.error(
+                request, 'Failed to send message. Please try again.')
 
     return render(request, 'forum_chat.html', {'community': community, 'messages': messages_qs})
 
