@@ -391,13 +391,14 @@ def about_us(request):
 
 def learn(request):
     # Retrieve preferred skill categories of the current user
-    preferred_categories = PreferredSkill.objects.filter(user=request.user).values_list('skill', flat=True)
-    
+    preferred_categories = PreferredSkill.objects.filter(
+        user=request.user).values_list('skill', flat=True)
+
     # Fetch users who have skills in the preferred skill categories for learning
     users = CustomUser.objects.exclude(
         Q(is_superuser=True) | Q(id=request.user.id)
     ).filter(preferred_skills__skill__in=preferred_categories).distinct()
-    
+
     user_count = users.count()
     context = {
         "users": users,
@@ -405,15 +406,17 @@ def learn(request):
     }
     return render(request, 'learn.html', context)
 
+
 def teach(request):
     # Retrieve skill categories of the current user
-    user_skills = UserSkill.objects.filter(user=request.user).values_list('category', flat=True)
-    
+    user_skills = UserSkill.objects.filter(
+        user=request.user).values_list('category', flat=True)
+
     # Fetch users who have selected the same skill categories for teaching
     users = CustomUser.objects.exclude(
         Q(is_superuser=True) | Q(id=request.user.id)
     ).filter(preferred_skills__skill__in=user_skills).distinct()
-    
+
     user_count = users.count()
     context = {
         "users": users,
@@ -610,25 +613,27 @@ def skillpoint_request(request):
     return render(request, 'skillpoint_request.html', {'received_requests': received_requests})
 
 
+from django.shortcuts import redirect
+
 def accept_skillpoint_request(request, request_id):
     skill_point_request = get_object_or_404(
         SkillPointRequest, id=request_id, receiver=request.user)
 
     if request.method == 'POST':
         if skill_point_request.status == 'pending':
-            # Deduct points from sender and add points to the receiver
+            # Deduct points from receiver and add points to the sender
+            receiver_skill_points = SkillPoints.objects.get(user=request.user)
             sender_skill_points = SkillPoints.objects.get(
                 user=skill_point_request.sender)
-            receiver_skill_points = SkillPoints.objects.get(user=request.user)
 
-            if sender_skill_points.available_points >= skill_point_request.points_requested:
-                sender_skill_points.available_points -= skill_point_request.points_requested
-                sender_skill_points.spent_points += skill_point_request.points_requested
-                sender_skill_points.save()
-
-                receiver_skill_points.available_points += skill_point_request.points_requested
-                receiver_skill_points.received_points += skill_point_request.points_requested
+            if receiver_skill_points.available_points >= skill_point_request.points_requested:
+                receiver_skill_points.available_points -= skill_point_request.points_requested
+                receiver_skill_points.spent_points += skill_point_request.points_requested
                 receiver_skill_points.save()
+
+                sender_skill_points.available_points += skill_point_request.points_requested
+                sender_skill_points.received_points += skill_point_request.points_requested
+                sender_skill_points.save()
 
                 skill_point_request.status = 'accepted'
                 skill_point_request.save()
@@ -639,7 +644,11 @@ def accept_skillpoint_request(request, request_id):
                     skill_request.status = 'accepted'
                     skill_request.save()
 
+                # Redirect to profile page after accepting the request
+                return redirect('profile')  # Update with your profile URL name
+
     return redirect('skillpoint_request_status')
+
 
 
 def reject_skillpoint_request(request, request_id):
@@ -836,11 +845,11 @@ def create_review(request, session_id):
             review.sender = request.user
             review.receiver = skill_session.skill_request.receiver
             review.skill_session = skill_session
-            
+
             # Perform sentiment analysis on the review text
             sentiment_score = analyze_sentiment(review.text)
             review.sentiment_score = sentiment_score
-            
+
             review.save()
 
             # Update sentiment information for the user who received the review
@@ -860,11 +869,13 @@ def analyze_sentiment(text):
     sentiment_score = sia.polarity_scores(text)['compound']
     return sentiment_score
 
+
 def update_user_sentiment(user):
     # Calculate the average sentiment score for the user
     reviews = Review.objects.filter(receiver=user)
     if reviews.exists():
-        average_sentiment_score = reviews.aggregate(Avg('sentiment_score'))['sentiment_score__avg']
+        average_sentiment_score = reviews.aggregate(Avg('sentiment_score'))[
+            'sentiment_score__avg']
         # Update sentiment score and title for the user
         user.average_sentiment_score = average_sentiment_score
         user.sentiment_title = assign_sentiment_title(average_sentiment_score)
@@ -890,7 +901,13 @@ def assign_sentiment_title(sentiment_score):
 
 
 def buy_skillpoints(request):
-    return render(request, 'buy_points.html')
+    skill_points = SkillPoints.objects.get(user=request.user)
+
+    # Pass the SkillPoints object to the template context
+    context = {
+        'skill_points': skill_points
+    }
+    return render(request, 'buy_points.html', context)
 
 
 @login_required
@@ -930,6 +947,28 @@ def pay_razor(request):
 @csrf_exempt
 def success(request):
     # Assuming you have the transaction details stored in session
+    amount = 30000  # Assuming the fixed amount is 300 INR (30000 paisa)
+
+    # Create a Razorpay order
+    client = razorpay.Client(
+        auth=("rzp_test_4xk0xz87l8Atss", "7zBFnTLQvHPXVUseIuZbB1lq"))
+
+    order = client.order.create({
+        'amount': amount,
+        'currency': 'INR',
+        "receipt": "receipt#1",
+        'payment_capture': '1'})
+
+    print(order)
+
+    order_id = order['id']  # Get the order ID from the response
+
+    request.session['transaction'] = {
+        'amount_paid': amount / 100.0,  # Convert amount to rupees
+        'skill_points': 300,  # Update based on your logic
+        'purchase_time': timezone.now(),
+        'user': request.user.id,  # Store user ID
+    }
     transaction = request.session.get('transaction')
     if transaction:
         # Retrieve the user and the purchased skill points from the transaction
@@ -937,7 +976,8 @@ def success(request):
         skill_points = transaction['skill_points']
 
         # Update the SkillPoints model
-        skill_points_instance, created = SkillPoints.objects.get_or_create(user=user)
+        skill_points_instance, created = SkillPoints.objects.get_or_create(
+            user=user)
         skill_points_instance.available_points += skill_points
         skill_points_instance.save()
 
