@@ -390,8 +390,14 @@ def about_us(request):
 
 
 def learn(request):
-    users = CustomUser.objects.exclude(Q(is_superuser='1') | Q(
-        id=request.user.id))  # Exclude superusers
+    # Retrieve preferred skill categories of the current user
+    preferred_categories = PreferredSkill.objects.filter(user=request.user).values_list('skill', flat=True)
+    
+    # Fetch users who have skills in the preferred skill categories for learning
+    users = CustomUser.objects.exclude(
+        Q(is_superuser=True) | Q(id=request.user.id)
+    ).filter(preferred_skills__skill__in=preferred_categories).distinct()
+    
     user_count = users.count()
     context = {
         "users": users,
@@ -399,10 +405,15 @@ def learn(request):
     }
     return render(request, 'learn.html', context)
 
-
 def teach(request):
-    users = CustomUser.objects.exclude(Q(is_superuser='1') | Q(
-        id=request.user.id))  # Exclude superusers
+    # Retrieve skill categories of the current user
+    user_skills = UserSkill.objects.filter(user=request.user).values_list('category', flat=True)
+    
+    # Fetch users who have selected the same skill categories for teaching
+    users = CustomUser.objects.exclude(
+        Q(is_superuser=True) | Q(id=request.user.id)
+    ).filter(preferred_skills__skill__in=user_skills).distinct()
+    
     user_count = users.count()
     context = {
         "users": users,
@@ -875,50 +886,72 @@ def assign_sentiment_title(sentiment_score):
     elif sentiment_score > 0.3:
         return 'Average'
     else:
-        return 'Needs Improvement'
+        return 'Not So Good'
 
 
 def buy_skillpoints(request):
     return render(request, 'buy_points.html')
 
 
+@login_required
 def pay_razor(request):
     if request.method == "POST":
-        name = request.POST.get('name')
+        # Get the amount from the form or any other source
+        amount = 30000  # Assuming the fixed amount is 300 INR (30000 paisa)
 
+        # Create a Razorpay order
         client = razorpay.Client(
             auth=("rzp_test_4xk0xz87l8Atss", "7zBFnTLQvHPXVUseIuZbB1lq"))
 
-        payment = client.order.create({
-            'amount': 30000,
+        order = client.order.create({
+            'amount': amount,
             'currency': 'INR',
             "receipt": "receipt#1",
             'payment_capture': '1'})
 
-        # Update SkillPointsTransactionHistory model
-        transaction = SkillPointsTransactionHistory.objects.create(
-            user=request.user,
-            skill_points=300,  # Update based on your logic
-            amount_paid=amount / 100.0,  # Convert amount to rupees
-            purchase_time=timezone.now()
-        )
+        print(order)
 
-        # Update SkillPoints model
-        skill_points, created = SkillPoints.objects.get_or_create(
-            user=request.user)
-        skill_points.available_points += 300  # Update based on your logic
-        skill_points.save()
+        order_id = order['id']  # Get the order ID from the response
+
+        # Store transaction details and user in session
+        request.session['transaction'] = {
+            'amount_paid': amount / 100.0,  # Convert amount to rupees
+            'skill_points': 300,  # Update based on your logic
+            'purchase_time': timezone.now(),
+            'user': request.user.id,  # Store user ID
+        }
+
+        # Pass the order ID to the template
+        return render(request, 'pay_razor.html', {'order_id': order_id})
 
     return render(request, 'pay_razor.html')
 
 
 @csrf_exempt
 def success(request):
-    return render(request, "success.html")
+    # Assuming you have the transaction details stored in session
+    transaction = request.session.get('transaction')
+    if transaction:
+        # Retrieve the user and the purchased skill points from the transaction
+        user = transaction['user']
+        skill_points = transaction['skill_points']
 
-# @login_required
-# def chat(request):
-#     return render(request, 'chat.html')
+        # Update the SkillPoints model
+        skill_points_instance, created = SkillPoints.objects.get_or_create(user=user)
+        skill_points_instance.available_points += skill_points
+        skill_points_instance.save()
+
+        # Clear the transaction details from session
+        del request.session['transaction']
+
+        return render(request, "success.html", {'transaction': transaction})
+    else:
+        # If transaction details are not found, redirect to some error page
+        return redirect('error_page')
+
+
+def error_payment(request):
+    return render(request, "error_payment.html")
 
 
 @login_required

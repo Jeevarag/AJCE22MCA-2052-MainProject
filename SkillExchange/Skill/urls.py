@@ -24,6 +24,7 @@ urlpatterns = [
     path('buy_skillpoints/', views.buy_skillpoints, name='buy_skillpoints'),
     path('pay_razor/', views.pay_razor, name='pay_razor'),
     path('success/', views.success, name='success'),
+    path('error/', views.error_payment, name='error_page'),
     path('session_schedule/', views.session_schedule, name='session_schedule'),
     path('schedule-session/<int:request_id>/',
          views.schedule_session, name='schedule_session'),
